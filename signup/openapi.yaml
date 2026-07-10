@@ -1,0 +1,167 @@
+openapi: 3.0.0
+
+info:
+  title: EPD eMerchant Signup API
+  version: 1.0.0
+  description: Multi-step merchant onboarding workflow for external integrations
+  contact:
+    name: EPD Support
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://emap.epd.dev
+    description: Production
+
+security:
+  - BearerAuth: []
+
+paths:
+  /step/{stepNumber}/{uuid}:
+    get:
+      summary: Retrieve step data
+      description: Get pre-filled form data for specified step
+      tags:
+        - Steps
+      parameters:
+        - name: stepNumber
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 6
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Step data retrieved successfully
+        '401':
+          description: Unauthorized
+        '404':
+          description: Step or session not found
+
+  /signup/user:
+    post:
+      summary: Submit Step 1 (Account Information)
+      description: Create signup session and submit account owner info
+      tags:
+        - Steps
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Step1Request'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Step1Response'
+        '400':
+          description: Validation error
+
+  /signup/companies:
+    post:
+      summary: Submit Steps 2, 3, 5, or 6
+      description: Submit company and step-specific data
+      tags:
+        - Steps
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Validation error
+
+  /api/countries:
+    get:
+      summary: Get country list
+      tags:
+        - Reference Data
+      responses:
+        '200':
+          description: Success
+
+  /api/states:
+    get:
+      summary: Get US states
+      tags:
+        - Reference Data
+      responses:
+        '200':
+          description: Success
+
+  /api/industry-types:
+    get:
+      summary: Get industry types
+      tags:
+        - Reference Data
+      responses:
+        '200':
+          description: Success
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    Step1Request:
+      type: object
+      required:
+        - first_name
+        - last_name
+        - email
+        - phone
+        - name
+        - website
+        - business_formed_in
+        - step_count
+      properties:
+        first_name:
+          type: string
+          maxLength: 60
+        last_name:
+          type: string
+          maxLength: 60
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        name:
+          type: string
+          maxLength: 60
+        website:
+          type: string
+          format: uri
+        business_formed_in:
+          type: string
+        step_count:
+          type: integer
+          enum: [1]
+
+    Step1Response:
+      type: object
+      properties:
+        message:
+          type: string
+        uuid:
+          type: string
+        url:
+          type: string
+        companyExist:
+          type: boolean
+
+tags:
+  - name: Steps
+    description: Signup step endpoints
+  - name: Reference Data
+    description: Dropdown values
