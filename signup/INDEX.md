@@ -226,7 +226,6 @@ GET  /step/{1-6}/{uuid}             → Retrieve step data with pre-filled value
 POST /signup/user                   → Submit Step 1
 POST /signup/companies              → Submit Steps 2, 3, 5, 6
 POST /signup/handleOwnership        → Submit Step 4
-POST /signup/dynamic_fields         → Submit dynamic fields (Step 6)
 ```
 
 ### Validation Endpoints

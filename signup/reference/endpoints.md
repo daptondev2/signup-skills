@@ -2,7 +2,33 @@
 
 Complete reference for all EPD eMerchant Signup API endpoints.
 
-**Base URL:** `https://emap.epd.dev`
+**Base URL:** `https://emap.epd.dev/api/external/signup`
+
+**Authentication:** All endpoints require Bearer token + CSRF token
+
+---
+
+## Rate Limiting
+
+| Endpoint | Limit | Window | Use Case |
+|----------|-------|--------|----------|
+| POST /user | 10 req/min | Per minute | Step 1 account creation |
+| POST /companies | 10 req/min | Per minute | Steps 2-6 submissions |
+| POST /handleOwnership | 10 req/min | Per minute | Step 4 owner data |
+| POST /checkEmail | 60 req/min | Per minute | Real-time email validation |
+
+**Rate Limit Headers:**
+- `X-RateLimit-Limit`: Requests allowed per minute
+- `X-RateLimit-Remaining`: Requests remaining in current window
+- `X-RateLimit-Reset`: Unix timestamp when limit resets
+
+**On 429 Response (Rate Limited):**
+```json
+{
+  "message": "Too Many Requests",
+  "retry_after": 45
+}
+```
 
 ---
 
@@ -68,29 +94,33 @@ Headers:
 
 [Full Step 1 Documentation →](../step1/SKILL_STEP1.md)
 
-### POST /signup/user
+### POST /user
 
 Submit Step 1 data and create signup session.
 
-```
-POST https://emap.epd.dev/signup/user
-Headers:
-  Authorization: Bearer {token}
-  X-CSRF-TOKEN: {csrf_token}
-  Content-Type: application/x-www-form-urlencoded
+**Route:** `POST /api/external/signup/user`
 
-Body:
-  first_name=John
-  last_name=Doe
-  email=john@example.com
-  phone=%2B15551234567
-  name=Acme%20Corp
-  website=https%3A%2F%2Facme.com
-  business_formed_in=1
-  business_state=CA
-  annual_cc_sales=500000
-  promo_code=WELCOME2024
-  step_count=1
+**Rate Limit:** 10 requests/min
+
+**Full URL:** `https://emap.epd.dev/api/external/signup/user`
+
+```
+POST /api/external/signup/user HTTP/1.1
+Authorization: Bearer {token}
+X-CSRF-TOKEN: {csrf_token}
+Content-Type: application/x-www-form-urlencoded
+
+first_name=John
+last_name=Doe
+email=john@example.com
+phone=%2B15551234567
+name=Acme%20Corp
+website=https%3A%2F%2Facme.com
+business_formed_in=1
+business_state=CA
+annual_cc_sales=500000
+promo_code=WELCOME2024
+step_count=1
 ```
 
 **Response (200 OK):**
@@ -136,18 +166,23 @@ Headers:
 
 [Full Step 2 Documentation →](../step2/SKILL_STEP2.md)
 
-### POST /signup/companies (Step 2)
+### POST /companies (Steps 2-6)
+
+**Route:** `POST /api/external/signup/companies`
+
+**Rate Limit:** 10 requests/min
+
+**Full URL:** `https://emap.epd.dev/api/external/signup/companies`
 
 ```
-POST https://emap.epd.dev/signup/companies
-Headers:
-  Authorization: Bearer {token}
-  X-CSRF-TOKEN: {csrf_token}
+POST /api/external/signup/companies HTTP/1.1
+Authorization: Bearer {token}
+X-CSRF-TOKEN: {csrf_token}
+Content-Type: application/x-www-form-urlencoded
 
-Body:
-  name=Acme%20Corp
-  country=1
-  business_formed=2020-05-15
+name=Acme%20Corp
+country=1
+business_formed=2020-05-15
   industry_type=1
   business_structure=2
   federal_tax_id=12-34-56789
@@ -242,37 +277,42 @@ Headers:
 
 [Full Step 4 Documentation →](../step4/SKILL_STEP4.md)
 
-### POST /signup/handleOwnership
+### POST /handleOwnership
 
 Submit Step 4 owner data.
 
-```
-POST https://emap.epd.dev/signup/handleOwnership
-Headers:
-  Authorization: Bearer {token}
-  X-CSRF-TOKEN: {csrf_token}
+**Route:** `POST /api/external/signup/handleOwnership`
 
-Body:
-  owner[1][first_name]=John
-  owner[1][last_name]=Doe
-  owner[1][email]=john@example.com
-  owner[1][phone]=%2B15551234567
-  owner[1][job_title]=1
-  owner[1][ssn]=123-45-6789
-  owner[1][ownership_percentage]=100
-  owner[1][dob]=1980-05-15
-  owner[1][bankruptcy_filed]=0
-  owner[1][street_number]=123
-  owner[1][street_address]=Main%20St
-  owner[1][city]=San%20Francisco
-  owner[1][state]=CA
-  owner[1][postal_code]=94105
-  owner[1][country]=1
-  owner[1][driver_license_state_input]=CA
-  owner[1][document_number]=D1234567
-  owner[1][expiration_date]=2028-05-15
-  step_count=4
-  uuid={uuid}
+**Rate Limit:** 10 requests/min
+
+**Full URL:** `https://emap.epd.dev/api/external/signup/handleOwnership`
+
+```
+POST /api/external/signup/handleOwnership HTTP/1.1
+Authorization: Bearer {token}
+X-CSRF-TOKEN: {csrf_token}
+Content-Type: application/x-www-form-urlencoded
+
+owner[1][first_name]=John
+owner[1][last_name]=Doe
+owner[1][email]=john@example.com
+owner[1][phone]=%2B15551234567
+owner[1][job_title]=1
+owner[1][ssn]=123-45-6789
+owner[1][ownership_percentage]=100
+owner[1][dob]=1980-05-15
+owner[1][bankruptcy_filed]=0
+owner[1][street_number]=123
+owner[1][street_address]=Main%20St
+owner[1][city]=San%20Francisco
+owner[1][state]=CA
+owner[1][postal_code]=94105
+owner[1][country]=1
+owner[1][driver_license_state_input]=CA
+owner[1][document_number]=D1234567
+owner[1][expiration_date]=2028-05-15
+step_count=4
+uuid={uuid}
 ```
 
 **Response:** Redirect to Step 5
@@ -368,49 +408,6 @@ Body:
 }
 ```
 
-**Response (200 OK - With Dynamic Fields):**
-```json
-{
-  "message": "Additional information needed",
-  "redirect": "dynamicFields",
-  "dynamicFields": [
-    {
-      "id": "b2b_sales_percentage",
-      "name": "B2B Sales Percentage",
-      "type": "number",
-      "value": "",
-      "rule": [...]
-    }
-  ]
-}
-```
-
-### POST /signup/dynamic_fields
-
-Submit dynamic fields from Step 6 modal.
-
-```
-POST https://emap.epd.dev/signup/dynamic_fields
-Headers:
-  Authorization: Bearer {token}
-  X-CSRF-TOKEN: {csrf_token}
-
-Body:
-  textBoxFields[b2b_sales_percentage]=60
-  textBoxFields[b2c_sales_percentage]=40
-  uuid={uuid}
-```
-
-**Response (200 OK):**
-```json
-{
-  "message": "Dynamic fields saved",
-  "redirect": "/dashboard/merchant?landing=1"
-}
-```
-
----
-
 ## Reference Data
 
 Fetch dropdown values for form population.
@@ -466,6 +463,82 @@ GET https://emap.epd.dev/api/pricing-templates
 GET https://emap.epd.dev/api/files-types
 ```
 
+### GET /api/interest-details
+
+Get all available growth interests for Step 6 checkboxes.
+
+**Used In:** Step 6 (Final Details - "What would help your company grow?" field)
+
+**Authorization:** Requires Bearer token
+
+**Full URL:** `https://emap.epd.dev/api/interest-details`
+
+```
+GET /api/interest-details HTTP/1.1
+Authorization: Bearer {token}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Interest list",
+  "data": [
+    {
+      "id": 1,
+      "name": "Capital Infusion",
+      "slug": "capital-infusion",
+      "anchor_text": "Capital Infusion",
+      "anchor_html": "<a>Capital Infusion</a>",
+      "interest_group": {
+        "id": 1,
+        "name": "capital",
+        "created_at": "2024-01-15T10:30:00Z",
+        "updated_at": "2024-01-15T10:30:00Z"
+      },
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-15T10:30:00Z"
+    },
+    {
+      "id": 2,
+      "name": "Equipment Financing",
+      "slug": "equipment-financing",
+      "anchor_text": "Equipment Financing",
+      "anchor_html": "<a>Equipment Financing</a>",
+      "interest_group": {
+        "id": 1,
+        "name": "capital"
+      }
+    },
+    {
+      "id": 3,
+      "name": "Marketing Assistance",
+      "slug": "marketing-assistance",
+      "anchor_text": "Marketing Assistance",
+      "anchor_html": "<a>Marketing Assistance</a>",
+      "interest_group": {
+        "id": 2,
+        "name": "marketing"
+      }
+    }
+  ]
+}
+```
+
+**Implementation Notes:**
+- Group interests by `interest_group.name` for UI rendering
+- Use `id` as checkbox value
+- Cache results locally with 24-hour TTL recommended
+- Send selected IDs in Step 6 POST as: `other_interests_capital[]=1&other_interests_capital[]=3`
+
+**Response (401 Unauthorized):**
+```json
+{
+  "message": "Unauthorized",
+  "status": 401
+}
+```
+
 ---
 
 ## Validation Endpoints
@@ -492,24 +565,37 @@ Body:
 }
 ```
 
-### POST /signup/checkEmail
+### POST /checkEmail
 
 Check if email address already registered (Step 4).
 
-```
-POST https://emap.epd.dev/signup/checkEmail
-Headers:
-  Authorization: Bearer {token}
+**Route:** `POST /api/external/signup/checkEmail`
 
-Body:
-  email=john@example.com
-  uuid={uuid}
+**Rate Limit:** 60 requests/min (high limit for real-time validation)
+
+**Full URL:** `https://emap.epd.dev/api/external/signup/checkEmail`
+
+```
+POST /api/external/signup/checkEmail HTTP/1.1
+Authorization: Bearer {token}
+X-CSRF-TOKEN: {csrf_token}
+Content-Type: application/x-www-form-urlencoded
+
+email=john@example.com
+uuid={uuid}
 ```
 
-**Response (200 OK):**
+**Response (200 OK - Email Available):**
 ```json
 {
   "exists": false
+}
+```
+
+**Response (200 OK - Email Taken):**
+```json
+{
+  "exists": true
 }
 ```
 

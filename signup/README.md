@@ -1,9 +1,9 @@
 # EPD eMerchant Signup API
 
 **Version:** 1.0.0  
-**Base URL:** `https://emap.epd.dev`  
-**Authentication:** Bearer Token (OAuth 2.0)  
-**Rate Limit:** 100 requests/minute  
+**Base URL:** `https://emap.epd.dev/api/external/signup`  
+**Authentication:** Bearer Token + CSRF Token  
+**Rate Limits:** 10 req/min (most endpoints), 60 req/min (email check)  
 **Response Format:** JSON
 
 ---

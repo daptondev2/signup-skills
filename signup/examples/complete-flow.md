@@ -261,51 +261,12 @@ const response6 = await fetch('https://emap.epd.dev/signup/companies', {
   "redirect": "/dashboard/merchant?landing=1"
 }
 
-// Response: Option 2 - Dynamic Fields Required
-{
-  "message": "Additional information needed",
-  "redirect": "dynamicFields",
-  "dynamicFields": [
-    {
-      "id": "b2b_sales_percentage",
-      "name": "B2B Sales Percentage",
-      "type": "number",
-      "rule": [...]
-    },
-    {
-      "id": "b2c_sales_percentage",
-      "name": "B2C Sales Percentage",
-      "type": "number",
-      "rule": [...]
-    }
-  ]
-}
 ```
 
-### Step 6b: Dynamic Fields (if needed)
+### Step 6b: Final Redirect
 
 ```javascript
-// If Step 6 response had dynamicFields
-const dynamicData = {
-  'textBoxFields[b2b_sales_percentage]': '60',
-  'textBoxFields[b2c_sales_percentage]': '40',
-  uuid: uuid,
-  user_id: userId
-};
-
-const responseDynamic = await fetch('https://emap.epd.dev/signup/dynamic_fields', {
-  method: 'POST',
-  headers: { ... },
-  body: new URLSearchParams(dynamicData)
-});
-
-// Response
-{
-  "message": "Dynamic fields saved",
-  "redirect": "/dashboard/merchant?landing=1"
-}
-
-// Final redirect
+// After Step 6 submission, redirect to dashboard
 window.location.href = '/dashboard/merchant?landing=1';
 ```
 

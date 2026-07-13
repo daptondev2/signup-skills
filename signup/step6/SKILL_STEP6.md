@@ -4,15 +4,14 @@
 **Section:** Application Completion  
 **Required Fields:** 4/12  
 **Dependent Fields:** 2  
-**Dynamic Fields:** Conditional (rule engine driven)  
 **Previous Step:** Step 5  
-**Next Step:** Completion / Dynamic Fields Modal / CCBill
+**Next Step:** Dashboard / CCBill
 
 ---
 
 ## Overview
 
-Step 6 is the final step before application submission. It captures referral source, account setup preferences, and business interests. This step may trigger a dynamic fields modal based on rule engine evaluation. Upon completion, users are either redirected to the dashboard or presented with additional dynamic questions.
+Step 6 is the final step before application submission. It captures referral source, account setup preferences, and business interests. Upon completion, users are redirected to the dashboard or CCBill payment flow.
 
 ---
 
@@ -85,53 +84,82 @@ Example values:
 
 **Interest Checkboxes:**
 - Multiple selection allowed
-- Options: Capital, Credit Line, Consulting, Other
+- Options loaded from API endpoint
 - Not required but captured if selected
 - Helps with follow-up offers
+
+**API Endpoint for Interest Options:**
+```
+GET https://emap.epd.dev/api/interest-details
+Authorization: Bearer {token}
+
+Response:
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "name": "Capital Infusion",
+      "interest_group": {"id": 1, "name": "capital"}
+    },
+    {
+      "id": 2,
+      "name": "Equipment Financing",
+      "interest_group": {"id": 1, "name": "capital"}
+    },
+    {
+      "id": 3,
+      "name": "Marketing Assistance",
+      "interest_group": {"id": 2, "name": "marketing"}
+    }
+  ]
+}
+```
+
+**Implementation Guide:**
+1. Fetch interests from `/api/interest-details` on page load
+2. Group by `interest_group.name`
+3. Render as checkbox list grouped by category
+4. Use interest `id` as checkbox value
+5. Cache results locally (24-hour TTL recommended)
+6. On form submit, send selected IDs: `other_interests_capital[]=1&other_interests_capital[]=3`
+
+**JavaScript Example:**
+```javascript
+// Fetch and render interests
+fetch('https://emap.epd.dev/api/interest-details', {
+  headers: { 'Authorization': `Bearer ${token}` }
+})
+.then(r => r.json())
+.then(response => {
+  const grouped = {};
+  response.data.forEach(interest => {
+    const groupName = interest.interest_group?.name || 'Other';
+    if (!grouped[groupName]) grouped[groupName] = [];
+    grouped[groupName].push(interest);
+  });
+  
+  // Render grouped checkboxes
+  Object.entries(grouped).forEach(([groupName, items]) => {
+    console.log(`<h4>${groupName}</h4>`);
+    items.forEach(item => {
+      console.log(`
+        <label>
+          <input type="checkbox" name="other_interests_capital[]" value="${item.id}">
+          ${item.name}
+        </label>
+      `);
+    });
+  });
+})
+.catch(err => console.error('Failed to load interests:', err));
+```
 
 **Terms & Conditions:**
 - Single checkbox, required
 - Must be checked to submit
 - Links to terms document
 - Validation: `required: true`
-
----
-
-## Dynamic Fields Modal
-
-**Trigger:** If rule engine returns dynamic fields for step_count=6
-
-**Display:** Modal appears after Step 6 form validation passes
-
-**Fields Supported:**
-- Text input
-- Number input
-- Textarea
-- Checkbox group
-- Radio group
-- Divider (section separator)
-
-**Example Dynamic Field:**
-```json
-{
-  "id": "b2b_sales_percentage",
-  "name": "B2B Sales Percentage",
-  "type": "number",
-  "value": "",
-  "rule": [
-    {"id": "required"},
-    {"id": "min", "value": 0},
-    {"id": "max", "value": 100}
-  ],
-  "tooltip": "Percentage of sales from B2B customers"
-}
-```
-
-**B2B/B2C Validation:**
-- Special rule: maxPercentage
-- Sum of B2B + B2C percentages must equal 100
-- Real-time validation on input
-- Error: "The sum of B2B and B2C percentages should be equal to 100"
 
 ---
 
@@ -186,8 +214,7 @@ Response (200 OK):
   },
   "referralSources": [...],
   "transactionDevices": [...],
-  "step_count": 6,
-  "dynamicFields": [] // Empty if no dynamic fields at this step
+  "step_count": 6
 }
 ```
 
@@ -221,28 +248,6 @@ Response (200 OK - No Dynamic Fields):
   "redirect": "/dashboard/merchant?landing=1"
 }
 
-Response (200 OK - With Dynamic Fields):
-{
-  "message": "Additional information needed",
-  "redirect": "dynamicFields",
-  "dynamicFields": [
-    {
-      "id": "b2b_sales_percentage",
-      "name": "B2B Sales Percentage",
-      "type": "number",
-      "value": "",
-      "rule": [...]
-    },
-    {
-      "id": "b2c_sales_percentage",
-      "name": "B2C Sales Percentage",
-      "type": "number",
-      "value": "",
-      "rule": [...]
-    }
-  ]
-}
-
 Response (200 OK - CCBill Redirect):
 {
   "message": "Redirecting to payment",
@@ -250,35 +255,6 @@ Response (200 OK - CCBill Redirect):
 }
 ```
 
-### POST - Submit Dynamic Fields
-```
-POST /signup/dynamic_fields
-Headers:
-  - X-CSRF-TOKEN: {csrf_token}
-  - Content-Type: multipart/form-data
-
-Body:
-{
-  "textBoxFields[b2b_sales_percentage]": "60",
-  "textBoxFields[b2c_sales_percentage]": "40",
-  "checkBoxFields[]": ["1", "2"],
-  "radioFields[]": ["1"],
-  "textarea[field_id]": "Text content",
-  "uuid": "550e8400...",
-  "user_id": "user_123"
-}
-
-Response (200 OK):
-{
-  "message": "Dynamic fields saved",
-  "ruleEngineResponse": {
-    "template_id": null // or template_id if more steps
-  },
-  "redirect": "/dashboard/merchant?landing=1"
-}
-```
-
----
 
 ## Redirect Scenarios
 
@@ -288,8 +264,6 @@ After Step 6 submission, response determines next action:
 |---|---|---|
 | `/dashboard/merchant?landing=1` | Success - Dashboard | Primary dashboard |
 | `/c/ccbill/{uuid}` | CCBill payment flow | Payment processor |
-| `dynamicFields` | Show modal | Modal with dynamic fields |
-| `/step/7/{uuid}` | Additional step (rare) | Next step if template_id present |
 
 ---
 
@@ -305,10 +279,6 @@ After Step 6 submission, response determines next action:
 - hear_about_us_other: Required if howdidyouhear = "50", "14", or "8"
 - bad_experience_happened: Required if bad_experience = "1"
 
-### Dynamic Field Validation
-- Each field has rules array from rule engine
-- Supported rule IDs: required, email, min, max, minlength, maxlength
-- B2B/B2C special: sum must equal 100
 
 ---
 
@@ -409,18 +379,11 @@ jQuery.validator.addMethod('maxPercentage', function() {
 
 1. User submits Step 6 form with all required fields
 2. Server validates and checks rule engine
-3. **If no dynamic fields:**
+3. **If application approved:**
    - Redirect to `/dashboard/merchant?landing=1`
    - Application complete
 
-4. **If dynamic fields present:**
-   - Return response with `redirect: "dynamicFields"`
-   - Modal displays with dynamic fields
-   - User fills dynamic form
-   - Submit dynamic fields to `/signup/dynamic_fields`
-   - Check rule engine response for additional steps/redirects
-
-5. **If CCBill required:**
+4. **If CCBill required:**
    - Return response with `redirect: "ccbill"`
    - Redirect to `/c/ccbill/{uuid}` for payment
 
@@ -428,7 +391,5 @@ jQuery.validator.addMethod('maxPercentage', function() {
 
 ## Next Steps
 Upon successful Step 6 submission:
-- **No dynamic fields:** Redirect to dashboard
-- **With dynamic fields:** Complete dynamic fields modal
-- **With CCBill:** Proceed to payment flow
-- **No completion:** May proceed to Step 7 (rare, if template_id present)
+- **Dashboard:** Redirect to `/dashboard/merchant?landing=1`
+- **CCBill:** Redirect to payment flow at `/c/ccbill/{uuid}`
