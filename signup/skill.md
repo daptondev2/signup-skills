@@ -19,7 +19,9 @@ This skill provides comprehensive guidelines for creating a complete merchant si
 ## API Integration Overview
 
 ### Base URL
-All dropdown options are fetched via REST API from `/api/partner/` endpoints.
+**Domain**: `https://emap.epd.dev`
+
+All dropdown options are fetched via REST API from `https://emap.epd.dev/api/partner/` endpoints.
 
 ### Response Format
 All API endpoints return data in this format:
@@ -40,12 +42,12 @@ All API endpoints return data in this format:
 
 | Endpoint | Used In | Field |
 |----------|---------|-------|
-| `/api/partner/countries` | Step 1, 2 | Formation Country, Company Country |
-| `/api/partner/states` | Step 1, 2 | Formation State |
-| `/api/partner/industry-types` | Step 2 | Industry Type |
-| `/api/partner/referral-sources` | Step 6 | How did you find us |
-| `/api/partner/shopping-carts` | Step 6 | Transaction Device |
-| `/api/partner/interest-details` | Step 6 | Help Your Company Grow (Interests) |
+| `https://emap.epd.dev/api/partner/countries` | Step 1, 2 | Formation Country, Company Country |
+| `https://emap.epd.dev/api/partner/states` | Step 1, 2 | Formation State |
+| `https://emap.epd.dev/api/partner/industry-types` | Step 2 | Industry Type |
+| `https://emap.epd.dev/api/partner/referral-sources` | Step 6 | How did you find us |
+| `https://emap.epd.dev/api/partner/shopping-carts` | Step 6 | Transaction Device |
+| `https://emap.epd.dev/api/partner/interest-details` | Step 6 | Help Your Company Grow (Interests) |
 
 ### Dropdown Loading Strategy
 - **Load on page mount**: Fetch all dropdown data on step load
@@ -62,45 +64,45 @@ All API endpoints return data in this format:
 
 | Endpoint | Method | Purpose | Payload |
 |----------|--------|---------|---------|
-| `/v1/signup` | POST | **Initial signup** (Step 1) | Owner details, company info |
-| `/v1/application/step` | POST | **Submit each step** (Steps 2-6) | Step data, step number, uuid |
-| `/v1/ownership` | POST | **Submit ownership info** (Step 4) | Owner details, percentages |
+| `https://emap.epd.dev/v1/signup` | POST | **Initial signup** (Step 1) | Owner details, company info |
+| `https://emap.epd.dev/v1/application/step` | POST | **Submit each step** (Steps 2-6) | Step data, step number, uuid |
+| `https://emap.epd.dev/v1/ownership` | POST | **Submit ownership info** (Step 4) | Owner details, percentages |
 
 ### Step Submission Flow
 
 ```
 Step 1 (Account Info)
-  └─ POST /v1/signup
+  └─ POST https://emap.epd.dev/v1/signup
      ├─ Payload: first_name, last_name, email, phone, company_name, website, country, business_state, annual_sales
      ├─ Response: { uuid, step_count, redirect_url }
      └─ Navigate to: Step 2 with uuid
 
 Step 2 (Company Information)
-  └─ POST /v1/application/step
+  └─ POST https://emap.epd.dev/v1/application/step
      ├─ Payload: step_count=2, uuid, legal_name, name, industry_type, phone, location_type, formation_date, etc.
      ├─ Response: { success, step_count, next_step_url }
      └─ Navigate to: Step 3
 
 Step 3 (Product Information)
-  └─ POST /v1/application/step
+  └─ POST https://emap.epd.dev/v1/application/step
      ├─ Payload: step_count=3, uuid, card_swiped, customer_entered, staff_entered, transaction_amounts, etc.
      └─ Navigate to: Step 4
 
 Step 4 (Owner Information)
-  ├─ POST /v1/ownership
+  ├─ POST https://emap.epd.dev/v1/ownership
   │  ├─ Payload: owner[1], owner[2] (if applicable), ownership percentages
   │  └─ Response: { success }
-  └─ POST /v1/application/step
+  └─ POST https://emap.epd.dev/v1/application/step
      ├─ Payload: step_count=4, uuid
      └─ Navigate to: Step 5
 
 Step 5 (Banking Information)
-  └─ POST /v1/application/step
+  └─ POST https://emap.epd.dev/v1/application/step
      ├─ Payload: step_count=5, uuid, institution_number, customer_pay_currency, routing_number, account_number, etc.
      └─ Navigate to: Step 6
 
 Step 6 (Final Details)
-  └─ POST /v1/application/step
+  └─ POST https://emap.epd.dev/v1/application/step
      ├─ Payload: step_count=6, uuid, howdidyouhear, multiple_merchant_accounts, transaction_device, bad_experience, other_interests_capital
      ├─ Response: { success, redirect_url (dashboard or ccbill) }
      └─ Navigate to: Dashboard or CCBill

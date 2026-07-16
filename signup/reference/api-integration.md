@@ -29,7 +29,7 @@ All dropdown and checkbox values in the signup form are fetched from REST APIs. 
 ## API Endpoints & Usage
 
 ### 1. Countries List
-**Endpoint**: `GET /api/partner/countries`
+**Endpoint**: `GET https://emap.epd.dev/api/partner/countries`
 
 **Used In**:
 - Step 1: Formation Country field
@@ -51,7 +51,7 @@ All dropdown and checkbox values in the signup form are fetched from REST APIs. 
 **Frontend Implementation**:
 ```javascript
 // On Step 1 mount
-fetch('/api/partner/countries')
+fetch('https://emap.epd.dev/api/partner/countries')
   .then(res => res.json())
   .then(data => {
     const countrySelect = document.getElementById('country');
@@ -69,7 +69,7 @@ fetch('/api/partner/countries')
 ---
 
 ### 2. US States List
-**Endpoint**: `GET /api/partner/states`
+**Endpoint**: `GET https://emap.epd.dev/api/partner/states`
 
 **Used In**:
 - Step 1: Formation State field (conditional - visible only when country = "1")
@@ -96,7 +96,7 @@ fetch('/api/partner/countries')
 ---
 
 ### 3. Industry Types
-**Endpoint**: `GET /api/partner/industry-types`
+**Endpoint**: `GET https://emap.epd.dev/api/partner/industry-types`
 
 **Used In**:
 - Step 2: Industry Type field
@@ -124,7 +124,7 @@ fetch('/api/partner/countries')
 ---
 
 ### 4. Referral Sources
-**Endpoint**: `GET /api/partner/referral-sources`
+**Endpoint**: `GET https://emap.epd.dev/api/partner/referral-sources`
 
 **Used In**:
 - Step 6: "How did you find us?" field
@@ -153,7 +153,7 @@ fetch('/api/partner/countries')
 ---
 
 ### 5. Transaction Devices / Shopping Carts
-**Endpoint**: `GET /api/partner/shopping-carts`
+**Endpoint**: `GET https://emap.epd.dev/api/partner/shopping-carts`
 
 **Used In**:
 - Step 6: "What device will you use to process transactions?" field
@@ -181,7 +181,7 @@ fetch('/api/partner/countries')
 ---
 
 ### 6. Interest Details
-**Endpoint**: `GET /api/partner/interest-details`
+**Endpoint**: `GET https://emap.epd.dev/api/partner/interest-details`
 
 **Used In**:
 - Step 6: "Help Your Company Grow" section (checkboxes)
@@ -225,7 +225,7 @@ fetch('/api/partner/countries')
 <!-- JavaScript -->
 <script>
   document.addEventListener('DOMContentLoaded', async () => {
-    const response = await fetch('/api/partner/industry-types');
+    const response = await fetch('https://emap.epd.dev/api/partner/industry-types');
     const { data } = await response.json();
     
     const select = document.getElementById('industry_type');
@@ -250,7 +250,7 @@ document.getElementById('country').addEventListener('change', async (e) => {
     stateDiv.style.display = 'block';
     
     // Load states only when needed
-    const response = await fetch('/api/partner/states');
+    const response = await fetch('https://emap.epd.dev/api/partner/states');
     const { data } = await response.json();
     
     const select = document.getElementById('business_state');
@@ -279,7 +279,7 @@ document.getElementById('country').addEventListener('change', async (e) => {
 <!-- JavaScript -->
 <script>
   document.addEventListener('DOMContentLoaded', async () => {
-    const response = await fetch('/api/partner/interest-details');
+    const response = await fetch('https://emap.epd.dev/api/partner/interest-details');
     const { data } = await response.json();
     
     const container = document.getElementById('interest_details');
@@ -336,7 +336,7 @@ async function fetchDropdownData(endpoint) {
   }
   
   // Fetch from API
-  const response = await fetch(`/api/partner/${endpoint}`);
+  const response = await fetch(`https://emap.epd.dev/api/partner/${endpoint}`);
   const data = await response.json();
   
   // Cache for this session
@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', preloadAllDropdowns);
 ```javascript
 async function fetchDropdownWithErrorHandling(endpoint) {
   try {
-    const response = await fetch(`/api/partner/${endpoint}`);
+    const response = await fetch(`https://emap.epd.dev/api/partner/${endpoint}`);
     
     if (!response.ok) {
       throw new Error(`API returned status ${response.status}`);
@@ -518,7 +518,7 @@ async function loadMultipleDropdowns() {
   const endpoints = ['countries', 'industry-types', 'referral-sources'];
   
   const promises = endpoints.map(ep => 
-    fetch(`/api/partner/${ep}`).then(r => r.json())
+    fetch(`https://emap.epd.dev/api/partner/${ep}`).then(r => r.json())
   );
   
   const results = await Promise.all(promises);
@@ -553,22 +553,22 @@ step6Observer.observe(document.getElementById('step_6'));
 
 ```bash
 # Countries
-curl http://localhost/api/partner/countries
+curl http://localhosthttps://emap.epd.dev/api/partner/countries
 
 # States
-curl http://localhost/api/partner/states
+curl http://localhosthttps://emap.epd.dev/api/partner/states
 
 # Industry Types
-curl http://localhost/api/partner/industry-types
+curl http://localhosthttps://emap.epd.dev/api/partner/industry-types
 
 # Referral Sources
-curl http://localhost/api/partner/referral-sources
+curl http://localhosthttps://emap.epd.dev/api/partner/referral-sources
 
 # Transaction Devices
-curl http://localhost/api/partner/shopping-carts
+curl http://localhosthttps://emap.epd.dev/api/partner/shopping-carts
 
 # Interests
-curl http://localhost/api/partner/interest-details
+curl http://localhosthttps://emap.epd.dev/api/partner/interest-details
 ```
 
 ---
@@ -577,7 +577,7 @@ curl http://localhost/api/partner/interest-details
 
 ### No data returned
 - Check API endpoint URL is correct
-- Verify `/api/partner/` prefix is used
+- Verify `https://emap.epd.dev/api/partner/` prefix is used
 - Check browser console for CORS errors
 - Test endpoint directly in browser/Postman
 

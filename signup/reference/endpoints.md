@@ -6,10 +6,12 @@ All form submission and data endpoints used by the signup form.
 
 ## Form Submission Endpoints
 
-### 1. POST /v1/signup
+### 1. POST https://emap.epd.dev/v1/signup
 **Purpose**: Initial account signup (Step 1)
 
 **When to Call**: User submits Step 1 form
+
+**Full URL**: `https://emap.epd.dev/v1/signup`
 
 **Payload**:
 ```json
@@ -42,10 +44,12 @@ All form submission and data endpoints used by the signup form.
 
 ---
 
-### 2. POST /v1/application/step
+### 2. POST https://emap.epd.dev/v1/application/step
 **Purpose**: Submit data for steps 2-6
 
 **When to Call**: User submits any step (2, 3, 5, 6)
+
+**Full URL**: `https://emap.epd.dev/v1/application/step`
 
 **Payload Structure**:
 ```json
@@ -141,10 +145,12 @@ All form submission and data endpoints used by the signup form.
 
 ---
 
-### 3. POST /v1/ownership
+### 3. POST https://emap.epd.dev/v1/ownership
 **Purpose**: Submit owner information (Step 4)
 
 **When to Call**: User submits Step 4 form
+
+**Full URL**: `https://emap.epd.dev/v1/ownership`
 
 **Payload**:
 ```json
@@ -194,13 +200,13 @@ All form submission and data endpoints used by the signup form.
 }
 ```
 
-**After Success**: Call `POST /v1/application/step` with step_count=4
+**After Success**: Call `POST https://emap.epd.dev/v1/application/step` with step_count=4
 
 ---
 
 ## Data Fetch Endpoints
 
-### GET /api/partner/countries
+### GET https://emap.epd.dev/api/partner/countries
 **Used For**: Formation Country (Step 1), Company Country (Step 2)
 
 **Response**:
@@ -215,7 +221,7 @@ All form submission and data endpoints used by the signup form.
 
 ---
 
-### GET /api/partner/states
+### GET https://emap.epd.dev/api/partner/states
 **Used For**: Formation State (Step 1, conditional on country=US)
 
 **Response**:
@@ -230,7 +236,7 @@ All form submission and data endpoints used by the signup form.
 
 ---
 
-### GET /api/partner/industry-types
+### GET https://emap.epd.dev/api/partner/industry-types
 **Used For**: Industry Type (Step 2)
 
 **Response**:
@@ -246,7 +252,7 @@ All form submission and data endpoints used by the signup form.
 
 ---
 
-### GET /api/partner/referral-sources
+### GET https://emap.epd.dev/api/partner/referral-sources
 **Used For**: How did you find us (Step 6)
 
 **Response**:
@@ -263,7 +269,7 @@ All form submission and data endpoints used by the signup form.
 
 ---
 
-### GET /api/partner/shopping-carts
+### GET https://emap.epd.dev/api/partner/shopping-carts
 **Used For**: Transaction Device (Step 6)
 
 **Response**:
@@ -278,7 +284,7 @@ All form submission and data endpoints used by the signup form.
 
 ---
 
-### GET /api/partner/interest-details
+### GET https://emap.epd.dev/api/partner/interest-details
 **Used For**: Help Your Company Grow (Step 6)
 
 **Response**:
@@ -350,7 +356,7 @@ User Clicks Next
   ↓
 Validate Form (Client-side)
   ↓
-POST /v1/signup
+POST https://emap.epd.dev/v1/signup
   ↓
 Store UUID in localStorage
   ↓
@@ -358,7 +364,7 @@ Redirect to /step/2/{uuid}
   ↓
 Load Step 2 (uuid from URL)
   ↓
-Fetch dropdown data (/api/partner/*)
+Fetch dropdown data (https://emap.epd.dev/api/partner/*)
   ↓
 User Fills Form
   ↓
@@ -366,20 +372,20 @@ User Clicks Next
   ↓
 Validate Form
   ↓
-POST /v1/application/step
+POST https://emap.epd.dev/v1/application/step
   ↓
 Redirect to /step/3/{uuid}
   ↓
 ... Repeat Steps 2-5 ...
   ↓
 Step 4 Special:
-  ├─ POST /v1/ownership (owner details)
-  └─ POST /v1/application/step (step marker)
+  ├─ POST https://emap.epd.dev/v1/ownership (owner details)
+  └─ POST https://emap.epd.dev/v1/application/step (step marker)
   ↓
 ... Continue Steps 5-6 ...
   ↓
 Step 6 Final:
-  ├─ POST /v1/application/step
+  ├─ POST https://emap.epd.dev/v1/application/step
   └─ Redirect to /dashboard/merchant (success)
 ```
 
