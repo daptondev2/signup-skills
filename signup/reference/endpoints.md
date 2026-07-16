@@ -6,12 +6,12 @@ All form submission and data endpoints used by the signup form.
 
 ## Form Submission Endpoints
 
-### 1. POST https://emap.epd.dev/v1/signup
+### 1. POST https://emap.epd.dev/api/v1/signup
 **Purpose**: Initial account signup (Step 1)
 
 **When to Call**: User submits Step 1 form
 
-**Full URL**: `https://emap.epd.dev/v1/signup`
+**Full URL**: `https://emap.epd.dev/api/v1/signup`
 
 **Payload**:
 ```json
@@ -44,12 +44,12 @@ All form submission and data endpoints used by the signup form.
 
 ---
 
-### 2. POST https://emap.epd.dev/v1/application/step
+### 2. POST https://emap.epd.dev/api/v1/application/step
 **Purpose**: Submit data for steps 2-6
 
 **When to Call**: User submits any step (2, 3, 5, 6)
 
-**Full URL**: `https://emap.epd.dev/v1/application/step`
+**Full URL**: `https://emap.epd.dev/api/v1/application/step`
 
 **Payload Structure**:
 ```json
@@ -145,12 +145,12 @@ All form submission and data endpoints used by the signup form.
 
 ---
 
-### 3. POST https://emap.epd.dev/v1/ownership
+### 3. POST https://emap.epd.dev/api/v1/ownership
 **Purpose**: Submit owner information (Step 4)
 
 **When to Call**: User submits Step 4 form
 
-**Full URL**: `https://emap.epd.dev/v1/ownership`
+**Full URL**: `https://emap.epd.dev/api/v1/ownership`
 
 **Payload**:
 ```json
@@ -200,7 +200,7 @@ All form submission and data endpoints used by the signup form.
 }
 ```
 
-**After Success**: Call `POST https://emap.epd.dev/v1/application/step` with step_count=4
+**After Success**: Call `POST https://emap.epd.dev/api/v1/application/step` with step_count=4
 
 ---
 
@@ -356,7 +356,7 @@ User Clicks Next
   ↓
 Validate Form (Client-side)
   ↓
-POST https://emap.epd.dev/v1/signup
+POST https://emap.epd.dev/api/v1/signup
   ↓
 Store UUID in localStorage
   ↓
@@ -372,20 +372,20 @@ User Clicks Next
   ↓
 Validate Form
   ↓
-POST https://emap.epd.dev/v1/application/step
+POST https://emap.epd.dev/api/v1/application/step
   ↓
 Redirect to /step/3/{uuid}
   ↓
 ... Repeat Steps 2-5 ...
   ↓
 Step 4 Special:
-  ├─ POST https://emap.epd.dev/v1/ownership (owner details)
-  └─ POST https://emap.epd.dev/v1/application/step (step marker)
+  ├─ POST https://emap.epd.dev/api/v1/ownership (owner details)
+  └─ POST https://emap.epd.dev/api/v1/application/step (step marker)
   ↓
 ... Continue Steps 5-6 ...
   ↓
 Step 6 Final:
-  ├─ POST https://emap.epd.dev/v1/application/step
+  ├─ POST https://emap.epd.dev/api/v1/application/step
   └─ Redirect to /dashboard/merchant (success)
 ```
 

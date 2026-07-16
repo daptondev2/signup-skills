@@ -8,9 +8,9 @@ Complete guide for implementing end-to-end form submission with API integration.
 
 The signup form uses **3 API endpoints** to submit data across 6 steps:
 
-1. **POST https://emap.epd.dev/v1/signup** - Step 1 initial signup
-2. **POST https://emap.epd.dev/v1/application/step** - Steps 2-6 progression
-3. **POST https://emap.epd.dev/v1/ownership** - Step 4 owner details
+1. **POST https://emap.epd.dev/api/v1/signup** - Step 1 initial signup
+2. **POST https://emap.epd.dev/api/v1/application/step** - Steps 2-6 progression
+3. **POST https://emap.epd.dev/api/v1/ownership** - Step 4 owner details
 
 ---
 
@@ -18,7 +18,7 @@ The signup form uses **3 API endpoints** to submit data across 6 steps:
 
 ### STEP 1: Account Information
 
-**Endpoint**: `POST https://emap.epd.dev/v1/signup`
+**Endpoint**: `POST https://emap.epd.dev/api/v1/signup`
 
 **Payload**:
 ```javascript
@@ -64,7 +64,7 @@ const formData = new FormData(form);
 const data = Object.fromEntries(formData);
 
 try {
-  const response = await fetch('https://emap.epd.dev/v1/signup', {
+  const response = await fetch('https://emap.epd.dev/api/v1/signup', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ try {
 
 ### STEP 2: Company Information
 
-**Endpoint**: `POST https://emap.epd.dev/v1/application/step`
+**Endpoint**: `POST https://emap.epd.dev/api/v1/application/step`
 
 **Payload**:
 ```javascript
@@ -140,7 +140,7 @@ async function submitStep2(formData) {
     ...Object.fromEntries(new FormData(document.getElementById('step2Form')))
   };
   
-  const response = await fetch('https://emap.epd.dev/v1/application/step', {
+  const response = await fetch('https://emap.epd.dev/api/v1/application/step', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -163,7 +163,7 @@ async function submitStep2(formData) {
 
 ### STEP 3: Product Information
 
-**Endpoint**: `POST https://emap.epd.dev/v1/application/step`
+**Endpoint**: `POST https://emap.epd.dev/api/v1/application/step`
 
 **Payload**:
 ```javascript
@@ -189,7 +189,7 @@ async function submitStep2(formData) {
 
 **Part A - Ownership Details**
 
-**Endpoint**: `POST https://emap.epd.dev/v1/ownership`
+**Endpoint**: `POST https://emap.epd.dev/api/v1/ownership`
 
 **Payload**:
 ```javascript
@@ -222,9 +222,9 @@ async function submitStep2(formData) {
 
 **Part B - Step Submission**
 
-After `https://emap.epd.dev/v1/ownership` succeeds, submit Step 4 via `https://emap.epd.dev/v1/application/step`:
+After `https://emap.epd.dev/api/v1/ownership` succeeds, submit Step 4 via `https://emap.epd.dev/api/v1/application/step`:
 
-**Endpoint**: `POST https://emap.epd.dev/v1/application/step`
+**Endpoint**: `POST https://emap.epd.dev/api/v1/application/step`
 
 **Payload**:
 ```javascript
@@ -232,7 +232,7 @@ After `https://emap.epd.dev/v1/ownership` succeeds, submit Step 4 via `https://e
   step_count: 4,
   uuid: "abc123def456",
   section: "ownership_info"
-  // Ownership data was already submitted via https://emap.epd.dev/v1/ownership
+  // Ownership data was already submitted via https://emap.epd.dev/api/v1/ownership
 }
 ```
 
@@ -242,7 +242,7 @@ async function submitStep4(ownershipData) {
   const uuid = localStorage.getItem('signup_uuid');
   
   // Step 4a: Submit ownership
-  const ownershipResponse = await fetch('https://emap.epd.dev/v1/ownership', {
+  const ownershipResponse = await fetch('https://emap.epd.dev/api/v1/ownership', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -261,7 +261,7 @@ async function submitStep4(ownershipData) {
   }
   
   // Step 4b: Submit step marker
-  const stepResponse = await fetch('https://emap.epd.dev/v1/application/step', {
+  const stepResponse = await fetch('https://emap.epd.dev/api/v1/application/step', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -285,7 +285,7 @@ async function submitStep4(ownershipData) {
 
 ### STEP 5: Banking Information
 
-**Endpoint**: `POST https://emap.epd.dev/v1/application/step`
+**Endpoint**: `POST https://emap.epd.dev/api/v1/application/step`
 
 **Payload**:
 ```javascript
@@ -307,7 +307,7 @@ async function submitStep4(ownershipData) {
 
 ### STEP 6: Final Details
 
-**Endpoint**: `POST https://emap.epd.dev/v1/application/step`
+**Endpoint**: `POST https://emap.epd.dev/api/v1/application/step`
 
 **Payload**:
 ```javascript
@@ -355,7 +355,7 @@ async function submitStep6(formData) {
     ...formData
   };
   
-  const response = await fetch('https://emap.epd.dev/v1/application/step', {
+  const response = await fetch('https://emap.epd.dev/api/v1/application/step', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -549,7 +549,7 @@ class SignupFormController {
   }
   
   async submitStep1(data) {
-    const response = await fetch('https://emap.epd.dev/v1/signup', {
+    const response = await fetch('https://emap.epd.dev/api/v1/signup', {
       method: 'POST',
       headers: this.getHeaders(),
       body: JSON.stringify(data)
@@ -566,7 +566,7 @@ class SignupFormController {
   
   async submitStep4(data) {
     // First submit ownership
-    await fetch('https://emap.epd.dev/v1/ownership', {
+    await fetch('https://emap.epd.dev/api/v1/ownership', {
       method: 'POST',
       headers: this.getHeaders(),
       body: JSON.stringify({
@@ -580,7 +580,7 @@ class SignupFormController {
   }
   
   async submitStep6(data) {
-    const response = await fetch('https://emap.epd.dev/v1/application/step', {
+    const response = await fetch('https://emap.epd.dev/api/v1/application/step', {
       method: 'POST',
       headers: this.getHeaders(),
       body: JSON.stringify({
@@ -598,7 +598,7 @@ class SignupFormController {
   }
   
   async submitStep(data) {
-    const response = await fetch('https://emap.epd.dev/v1/application/step', {
+    const response = await fetch('https://emap.epd.dev/api/v1/application/step', {
       method: 'POST',
       headers: this.getHeaders(),
       body: JSON.stringify({

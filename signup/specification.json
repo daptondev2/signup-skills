@@ -958,8 +958,8 @@
     },
     "form_submission_endpoints": {
       "step_1_signup": {
-        "endpoint": "POST https://emap.epd.dev/v1/signup",
-        "url": "https://emap.epd.dev/v1/signup",
+        "endpoint": "POST https://emap.epd.dev/api/v1/signup",
+        "url": "https://emap.epd.dev/api/v1/signup",
         "method": "POST",
         "purpose": "Initial signup - Step 1",
         "required_fields": [
@@ -972,8 +972,8 @@
         "error_response": 400
       },
       "step_2_6_application": {
-        "endpoint": "POST https://emap.epd.dev/v1/application/step",
-        "url": "https://emap.epd.dev/v1/application/step",
+        "endpoint": "POST https://emap.epd.dev/api/v1/application/step",
+        "url": "https://emap.epd.dev/api/v1/application/step",
         "method": "POST",
         "purpose": "Submit each application step (2-6)",
         "required_fields": ["step_count", "uuid", "section"],
@@ -984,8 +984,8 @@
         "step_6_fields": ["howdidyouhear", "multiple_merchant_accounts", "transaction_device", "bad_experience", "other_interests_capital"]
       },
       "step_4_ownership": {
-        "endpoint": "POST https://emap.epd.dev/v1/ownership",
-        "url": "https://emap.epd.dev/v1/ownership",
+        "endpoint": "POST https://emap.epd.dev/api/v1/ownership",
+        "url": "https://emap.epd.dev/api/v1/ownership",
         "method": "POST",
         "purpose": "Submit owner information - Step 4",
         "required_fields": [
