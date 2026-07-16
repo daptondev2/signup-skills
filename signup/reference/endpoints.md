@@ -1,610 +1,388 @@
 # API Endpoints Reference
 
-Complete reference for all EPD eMerchant Signup API endpoints.
-
-**Base URL:** `https://emap.epd.dev/api/external/signup`
-
-**Authentication:** All endpoints require Bearer token + CSRF token
+All form submission and data endpoints used by the signup form.
 
 ---
 
-## Rate Limiting
+## Form Submission Endpoints
 
-| Endpoint | Limit | Window | Use Case |
-|----------|-------|--------|----------|
-| POST /user | 10 req/min | Per minute | Step 1 account creation |
-| POST /companies | 10 req/min | Per minute | Steps 2-6 submissions |
-| POST /handleOwnership | 10 req/min | Per minute | Step 4 owner data |
-| POST /checkEmail | 60 req/min | Per minute | Real-time email validation |
+### 1. POST /v1/signup
+**Purpose**: Initial account signup (Step 1)
 
-**Rate Limit Headers:**
-- `X-RateLimit-Limit`: Requests allowed per minute
-- `X-RateLimit-Remaining`: Requests remaining in current window
-- `X-RateLimit-Reset`: Unix timestamp when limit resets
+**When to Call**: User submits Step 1 form
 
-**On 429 Response (Rate Limited):**
+**Payload**:
 ```json
 {
-  "message": "Too Many Requests",
-  "retry_after": 45
+  "first_name": "John",
+  "last_name": "Doe",
+  "email": "john@example.com",
+  "phone": "+1-555-1234",
+  "name": "Company Name",
+  "website": "https://example.com",
+  "country": "1",
+  "business_state": "CA",
+  "annual_sales": "500000"
 }
 ```
 
----
-
-## Table of Contents
-
-- [Step 1: Account Information](#step-1-account-information)
-- [Step 2: Company Details](#step-2-company-details)
-- [Step 3: Product Information](#step-3-product-information)
-- [Step 4: Beneficial Owners](#step-4-beneficial-owners)
-- [Step 5: Banking Information](#step-5-banking-information)
-- [Step 6: Final Details](#step-6-final-details)
-- [Reference Data](#reference-data)
-- [Validation Endpoints](#validation-endpoints)
-
----
-
-## Step 1: Account Information
-
-Account owner personal information and basic company details.
-
-### GET /step/1/{uuid}
-
-Retrieve Step 1 data (pre-filled from previous submission).
-
-```
-GET https://emap.epd.dev/step/1/{uuid}
-Headers:
-  Authorization: Bearer {token}
-```
-
-**Response (200 OK):**
-```json
-{
-  "applicationInfo": {
-    "uuid": "550e8400-e29b-41d4-a716-446655440000",
-    "step_count": 1
-  },
-  "data": {
-    "first_name": "John",
-    "last_name": "Doe",
-    "email": "john@example.com",
-    "phone": "+1-555-123-4567"
-  },
-  "company": {
-    "name": "Acme Corp",
-    "website": "https://acme.com",
-    "business_formed_in": "1",
-    "business_state": "CA",
-    "annual_cc_sales": "500000"
-  }
-}
-```
-
-**Fields:** 8 total
-- first_name, last_name, email, phone (4 required)
-- name, website, business_formed_in (3 required)
-- business_state (1 conditional - if country US)
-- annual_cc_sales (1 optional)
-- promo_code (1 optional)
-
-**Dependent Fields:** 1 rule
-- Country = "1" (US) → state becomes required
-
-[Full Step 1 Documentation →](../step1/SKILL_STEP1.md)
-
-### POST /user
-
-Submit Step 1 data and create signup session.
-
-**Route:** `POST /api/external/signup/user`
-
-**Rate Limit:** 10 requests/min
-
-**Full URL:** `https://emap.epd.dev/api/external/signup/user`
-
-```
-POST /api/external/signup/user HTTP/1.1
-Authorization: Bearer {token}
-X-CSRF-TOKEN: {csrf_token}
-Content-Type: application/x-www-form-urlencoded
-
-first_name=John
-last_name=Doe
-email=john@example.com
-phone=%2B15551234567
-name=Acme%20Corp
-website=https%3A%2F%2Facme.com
-business_formed_in=1
-business_state=CA
-annual_cc_sales=500000
-promo_code=WELCOME2024
-step_count=1
-```
-
-**Response (200 OK):**
-```json
-{
-  "message": "Success",
-  "uuid": "550e8400-e29b-41d4-a716-446655440000",
-  "url": "/step/2/{uuid}",
-  "companyExist": false,
-  "verificationLink": false
-}
-```
-
-**Response (400 Bad Request):**
-```json
-{
-  "status": 400,
-  "message": "Validation failed",
-  "errors": {
-    "email": ["The email has already been taken."],
-    "phone": ["Please enter a valid phone number."]
-  }
-}
-```
-
----
-
-## Step 2: Company Details
-
-Company legal structure, addresses, and business model.
-
-### GET /step/2/{uuid}
-
-Retrieve Step 2 data.
-
-```
-GET https://emap.epd.dev/step/2/{uuid}
-Headers:
-  Authorization: Bearer {token}
-```
-
-**Fields:** 15 total (12 required + 3 conditional)
-
-[Full Step 2 Documentation →](../step2/SKILL_STEP2.md)
-
-### POST /companies (Steps 2-6)
-
-**Route:** `POST /api/external/signup/companies`
-
-**Rate Limit:** 10 requests/min
-
-**Full URL:** `https://emap.epd.dev/api/external/signup/companies`
-
-```
-POST /api/external/signup/companies HTTP/1.1
-Authorization: Bearer {token}
-X-CSRF-TOKEN: {csrf_token}
-Content-Type: application/x-www-form-urlencoded
-
-name=Acme%20Corp
-country=1
-business_formed=2020-05-15
-  industry_type=1
-  business_structure=2
-  federal_tax_id=12-34-56789
-  customer_service_telephone_number=%2B15559876543
-  street_number=123
-  street_address=Business%20Ave
-  city=San%20Francisco
-  state=CA
-  postal_code=94105
-  address_country=1
-  is_physical_address_same_as_legal_address=1
-  marketingModel=1
-  step_count=2
-  section=company_info
-  uuid={uuid}
-```
-
-**Response (200 OK):**
-```json
-{
-  "message": "Saved successfully",
-  "uuid": "550e8400-e29b-41d4-a716-446655440000",
-  "redirect": "/step/3/{uuid}"
-}
-```
-
----
-
-## Step 3: Product Information
-
-Transaction entry methods, product descriptions, and fulfillment.
-
-### GET /step/3/{uuid}
-
-Retrieve Step 3 data.
-
-```
-GET https://emap.epd.dev/step/3/{uuid}
-Headers:
-  Authorization: Bearer {token}
-```
-
-**Fields:** 13 total (9 required + 2 conditional)
-
-[Full Step 3 Documentation →](../step3/SKILL_STEP3.md)
-
-### POST /signup/companies (Step 3)
-
-```
-POST https://emap.epd.dev/signup/companies
-Headers:
-  Authorization: Bearer {token}
-  X-CSRF-TOKEN: {csrf_token}
-
-Body:
-  card_swiped=40
-  customer_entered=35
-  staff_entered=25
-  describe_highest_transaction=Premium%20consulting
-  highest_transaction_amount=50000
-  average_transaction_amount=5000
-  describe_services=1
-  customer_service_time=1
-  refund_policy=1
-  fulfillment_by=1
-  shopping_cart=1
-  leave_deposit=1
-  step_count=3
-  section=product_info
-  uuid={uuid}
-```
-
-**Response:** Redirect to Step 4
-
----
-
-## Step 4: Beneficial Owners
-
-Owner personal information, identification, addresses, and ownership percentages.
-
-### GET /step/4/{uuid}
-
-Retrieve Step 4 data.
-
-```
-GET https://emap.epd.dev/step/4/{uuid}
-Headers:
-  Authorization: Bearer {token}
-```
-
-**Fields:** 24-48 total (16 Owner 1 always + 24 Owner 2 if < 51%)
-
-[Full Step 4 Documentation →](../step4/SKILL_STEP4.md)
-
-### POST /handleOwnership
-
-Submit Step 4 owner data.
-
-**Route:** `POST /api/external/signup/handleOwnership`
-
-**Rate Limit:** 10 requests/min
-
-**Full URL:** `https://emap.epd.dev/api/external/signup/handleOwnership`
-
-```
-POST /api/external/signup/handleOwnership HTTP/1.1
-Authorization: Bearer {token}
-X-CSRF-TOKEN: {csrf_token}
-Content-Type: application/x-www-form-urlencoded
-
-owner[1][first_name]=John
-owner[1][last_name]=Doe
-owner[1][email]=john@example.com
-owner[1][phone]=%2B15551234567
-owner[1][job_title]=1
-owner[1][ssn]=123-45-6789
-owner[1][ownership_percentage]=100
-owner[1][dob]=1980-05-15
-owner[1][bankruptcy_filed]=0
-owner[1][street_number]=123
-owner[1][street_address]=Main%20St
-owner[1][city]=San%20Francisco
-owner[1][state]=CA
-owner[1][postal_code]=94105
-owner[1][country]=1
-owner[1][driver_license_state_input]=CA
-owner[1][document_number]=D1234567
-owner[1][expiration_date]=2028-05-15
-step_count=4
-uuid={uuid}
-```
-
-**Response:** Redirect to Step 5
-
----
-
-## Step 5: Banking Information
-
-Bank account details and payment processor information.
-
-### GET /step/5/{uuid}
-
-Retrieve Step 5 data.
-
-```
-GET https://emap.epd.dev/step/5/{uuid}
-Headers:
-  Authorization: Bearer {token}
-```
-
-**Fields:** 8 total (4 required + 2 conditional by country)
-
-[Full Step 5 Documentation →](../step5/SKILL_STEP5.md)
-
-### POST /signup/companies (Step 5)
-
-```
-POST https://emap.epd.dev/signup/companies
-Headers:
-  Authorization: Bearer {token}
-  X-CSRF-TOKEN: {csrf_token}
-
-Body:
-  bank_routing_number=123456789
-  bank_account_number=98765432
-  bank_name=Chase%20Bank
-  current_processing=1
-  processor_name=Square
-  customer_pay_currency=USD
-  step_count=5
-  section=product_info
-  is_plaid=0
-  uuid={uuid}
-```
-
-**Response:** Redirect to Step 6
-
----
-
-## Step 6: Final Details
-
-Referral source, account preferences, and interests.
-
-### GET /step/6/{uuid}
-
-Retrieve Step 6 data.
-
-```
-GET https://emap.epd.dev/step/6/{uuid}
-Headers:
-  Authorization: Bearer {token}
-```
-
-**Fields:** 12 static + 0-N dynamic
-
-[Full Step 6 Documentation →](../step6/SKILL_STEP6.md)
-
-### POST /signup/companies (Step 6)
-
-```
-POST https://emap.epd.dev/signup/companies
-Headers:
-  Authorization: Bearer {token}
-  X-CSRF-TOKEN: {csrf_token}
-
-Body:
-  howdidyouhear=1
-  multiple_merchant_accounts=0
-  transaction_device=1
-  bad_experience=0
-  other_interests_capital=1&other_interests_capital=2
-  terms_and_conditions_agreed=on
-  step_count=6
-  section=interest_details
-  uuid={uuid}
-```
-
-**Response (200 OK - No Dynamic Fields):**
-```json
-{
-  "message": "Application submitted successfully",
-  "redirect": "/dashboard/merchant?landing=1"
-}
-```
-
-## Reference Data
-
-Fetch dropdown values for form population.
-
-### GET /api/countries
-
-```
-GET https://emap.epd.dev/api/countries
-```
-
-**Response:**
-```json
-[
-  {"id": 1, "name": "United States"},
-  {"id": 2, "name": "Canada"},
-  ...
-]
-```
-
-### GET /api/states
-
-```
-GET https://emap.epd.dev/api/states
-```
-
-### GET /api/industry-types
-
-```
-GET https://emap.epd.dev/api/industry-types
-```
-
-### GET /api/shopping-carts
-
-```
-GET https://emap.epd.dev/api/shopping-carts
-```
-
-### GET /api/referral-sources
-
-```
-GET https://emap.epd.dev/api/referral-sources
-```
-
-### GET /api/pricing-templates
-
-```
-GET https://emap.epd.dev/api/pricing-templates
-```
-
-### GET /api/files-types
-
-```
-GET https://emap.epd.dev/api/files-types
-```
-
-### GET /api/interest-details
-
-Get all available growth interests for Step 6 checkboxes.
-
-**Used In:** Step 6 (Final Details - "What would help your company grow?" field)
-
-**Authorization:** Requires Bearer token
-
-**Full URL:** `https://emap.epd.dev/api/interest-details`
-
-```
-GET /api/interest-details HTTP/1.1
-Authorization: Bearer {token}
-```
-
-**Response (200 OK):**
+**Success Response** (201):
 ```json
 {
   "success": true,
-  "message": "Interest list",
-  "data": [
-    {
-      "id": 1,
-      "name": "Capital Infusion",
-      "slug": "capital-infusion",
-      "anchor_text": "Capital Infusion",
-      "anchor_html": "<a>Capital Infusion</a>",
-      "interest_group": {
-        "id": 1,
-        "name": "capital",
-        "created_at": "2024-01-15T10:30:00Z",
-        "updated_at": "2024-01-15T10:30:00Z"
-      },
-      "created_at": "2024-01-15T10:30:00Z",
-      "updated_at": "2024-01-15T10:30:00Z"
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "step_count": 1,
+  "message": "Account created successfully"
+}
+```
+
+**Store UUID**: `localStorage.setItem('signup_uuid', uuid)`
+
+**Navigate To**: `/step/2/{uuid}`
+
+---
+
+### 2. POST /v1/application/step
+**Purpose**: Submit data for steps 2-6
+
+**When to Call**: User submits any step (2, 3, 5, 6)
+
+**Payload Structure**:
+```json
+{
+  "step_count": 2,
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "section": "company_info",
+  "... step specific fields ..."
+}
+```
+
+**Step 2 Payload** (section: "company_info"):
+```json
+{
+  "step_count": 2,
+  "uuid": "...",
+  "section": "company_info",
+  "legal_name": "ABC Inc.",
+  "name": "ABC",
+  "industry_type": "retail",
+  "customer_service_telephone_number": "+1-555-5678",
+  "business_location": "2",
+  "business_formed": "2020-01-15",
+  "business_organized": "3",
+  "federal_tax_id": "12-3456789"
+}
+```
+
+**Step 3 Payload** (section: "product_info"):
+```json
+{
+  "step_count": 3,
+  "uuid": "...",
+  "section": "product_info",
+  "card_swiped": "25",
+  "customer_entered": "50",
+  "staff_entered": "25",
+  "average_transaction_amount": "200",
+  "highest_transaction_amount": "1000",
+  "describe_services": "Retail products",
+  "describe_highest_transaction": "Premium package"
+}
+```
+
+**Step 5 Payload** (section: "banking_info"):
+```json
+{
+  "step_count": 5,
+  "uuid": "...",
+  "section": "banking_info",
+  "institution_number": "001",
+  "customer_pay_currency": "USD",
+  "routing_number": "123456789",
+  "account_number": "9876543210"
+}
+```
+
+**Step 6 Payload** (section: "interest_details"):
+```json
+{
+  "step_count": 6,
+  "uuid": "...",
+  "section": "interest_details",
+  "howdidyouhear": "50",
+  "hear_about_us_other": "Friend",
+  "multiple_merchant_accounts": "1",
+  "transaction_device": "terminal",
+  "bad_experience": "0",
+  "other_interests_capital": ["capital", "resources"]
+}
+```
+
+**Success Response** (200):
+```json
+{
+  "success": true,
+  "step_count": 2,
+  "next_step_url": "/step/3/550e8400-e29b-41d4-a716-446655440000",
+  "message": "Step 2 saved successfully"
+}
+```
+
+**Step 6 Final Response**:
+```json
+{
+  "success": true,
+  "message": "Application submitted",
+  "redirect": "/dashboard/merchant"
+}
+```
+
+**Navigate To**: `response.next_step_url` or `response.redirect`
+
+---
+
+### 3. POST /v1/ownership
+**Purpose**: Submit owner information (Step 4)
+
+**When to Call**: User submits Step 4 form
+
+**Payload**:
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "owner": {
+    "1": {
+      "first_name": "John",
+      "last_name": "Doe",
+      "email": "john@example.com",
+      "phone": "+1-555-1234",
+      "ssn": "123-45-6789",
+      "job_title": "1",
+      "ownership_percentage": 100,
+      "dob": "1980-05-15"
     },
-    {
-      "id": 2,
-      "name": "Equipment Financing",
-      "slug": "equipment-financing",
-      "anchor_text": "Equipment Financing",
-      "anchor_html": "<a>Equipment Financing</a>",
-      "interest_group": {
-        "id": 1,
-        "name": "capital"
-      }
-    },
-    {
-      "id": 3,
-      "name": "Marketing Assistance",
-      "slug": "marketing-assistance",
-      "anchor_text": "Marketing Assistance",
-      "anchor_html": "<a>Marketing Assistance</a>",
-      "interest_group": {
-        "id": 2,
-        "name": "marketing"
-      }
+    "2": null
+  }
+}
+```
+
+**If Owner 2 Required** (when owner 1 < 50%):
+```json
+{
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "owner": {
+    "1": { ... owner 1 data ... },
+    "2": {
+      "first_name": "Jane",
+      "last_name": "Smith",
+      "email": "jane@example.com",
+      "phone": "+1-555-5678",
+      "ssn": "987-65-4321",
+      "job_title": "2",
+      "ownership_percentage": 50,
+      "dob": "1985-03-20"
     }
+  }
+}
+```
+
+**Success Response** (200):
+```json
+{
+  "success": true,
+  "message": "Ownership information saved"
+}
+```
+
+**After Success**: Call `POST /v1/application/step` with step_count=4
+
+---
+
+## Data Fetch Endpoints
+
+### GET /api/partner/countries
+**Used For**: Formation Country (Step 1), Company Country (Step 2)
+
+**Response**:
+```json
+{
+  "data": [
+    { "slug": "1", "name": "United States" },
+    { "slug": "2", "name": "Canada" }
   ]
 }
 ```
 
-**Implementation Notes:**
-- Group interests by `interest_group.name` for UI rendering
-- Use `id` as checkbox value
-- Cache results locally with 24-hour TTL recommended
-- Send selected IDs in Step 6 POST as: `other_interests_capital[]=1&other_interests_capital[]=3`
+---
 
-**Response (401 Unauthorized):**
+### GET /api/partner/states
+**Used For**: Formation State (Step 1, conditional on country=US)
+
+**Response**:
 ```json
 {
-  "message": "Unauthorized",
-  "status": 401
+  "data": [
+    { "slug": "CA", "name": "California" },
+    { "slug": "NY", "name": "New York" }
+  ]
 }
 ```
 
 ---
 
-## Validation Endpoints
+### GET /api/partner/industry-types
+**Used For**: Industry Type (Step 2)
 
-### POST /signup/validateRoutingNumber
-
-Validate US bank routing number (Step 5).
-
-```
-POST https://emap.epd.dev/signup/validateRoutingNumber
-Headers:
-  Authorization: Bearer {token}
-
-Body:
-  routing_number=123456789
-  uuid={uuid}
-```
-
-**Response (200 OK):**
+**Response**:
 ```json
 {
-  "valid": true,
-  "bankName": "Chase Bank"
-}
-```
-
-### POST /checkEmail
-
-Check if email address already registered (Step 4).
-
-**Route:** `POST /api/external/signup/checkEmail`
-
-**Rate Limit:** 60 requests/min (high limit for real-time validation)
-
-**Full URL:** `https://emap.epd.dev/api/external/signup/checkEmail`
-
-```
-POST /api/external/signup/checkEmail HTTP/1.1
-Authorization: Bearer {token}
-X-CSRF-TOKEN: {csrf_token}
-Content-Type: application/x-www-form-urlencoded
-
-email=john@example.com
-uuid={uuid}
-```
-
-**Response (200 OK - Email Available):**
-```json
-{
-  "exists": false
-}
-```
-
-**Response (200 OK - Email Taken):**
-```json
-{
-  "exists": true
+  "data": [
+    { "slug": "retail", "name": "Retail" },
+    { "slug": "ecommerce", "name": "E-commerce" },
+    { "slug": "other", "name": "Other" }
+  ]
 }
 ```
 
 ---
 
-## See Also
+### GET /api/partner/referral-sources
+**Used For**: How did you find us (Step 6)
 
-- [Error Codes](./error-codes.md) - All error messages
-- [Validation Rules](./validation-rules.md) - Field requirements
-- [Dependent Fields](./dependent-fields.md) - Conditional logic
-- [Data Types](./data-types.md) - Field formats
-- [Enums](./enums.md) - Dropdown values
+**Response**:
+```json
+{
+  "data": [
+    { "slug": "1", "name": "Google Search" },
+    { "slug": "50", "name": "Other" },
+    { "slug": "14", "name": "Friend" },
+    { "slug": "8", "name": "Live Event / Trade Show" }
+  ]
+}
+```
+
+---
+
+### GET /api/partner/shopping-carts
+**Used For**: Transaction Device (Step 6)
+
+**Response**:
+```json
+{
+  "data": [
+    { "slug": "terminal", "name": "Card Terminal" },
+    { "slug": "software", "name": "Software / Web" }
+  ]
+}
+```
+
+---
+
+### GET /api/partner/interest-details
+**Used For**: Help Your Company Grow (Step 6)
+
+**Response**:
+```json
+{
+  "data": [
+    { "slug": "capital", "name": "Capital" },
+    { "slug": "resources", "name": "Resources" },
+    { "slug": "marketing", "name": "Marketing" }
+  ]
+}
+```
+
+---
+
+## Error Response Format
+
+### Validation Errors (400/422)
+```json
+{
+  "success": false,
+  "message": "Validation failed",
+  "errors": {
+    "email": "Email is already registered",
+    "phone": "Phone number is invalid",
+    "name": "Company name is required"
+  }
+}
+```
+
+### Server Error (500)
+```json
+{
+  "success": false,
+  "message": "Internal server error"
+}
+```
+
+### Session Expired (419)
+```json
+{
+  "success": false,
+  "message": "Your session has expired. Please refresh and try again."
+}
+```
+
+---
+
+## Request Headers (Required for All Requests)
+
+```javascript
+headers: {
+  'Content-Type': 'application/json',
+  'X-CSRF-TOKEN': csrfToken,
+  'Accept': 'application/json'
+}
+```
+
+---
+
+## Complete Submission Flow
+
+```
+User Opens Step 1
+  ↓
+User Fills Form
+  ↓
+User Clicks Next
+  ↓
+Validate Form (Client-side)
+  ↓
+POST /v1/signup
+  ↓
+Store UUID in localStorage
+  ↓
+Redirect to /step/2/{uuid}
+  ↓
+Load Step 2 (uuid from URL)
+  ↓
+Fetch dropdown data (/api/partner/*)
+  ↓
+User Fills Form
+  ↓
+User Clicks Next
+  ↓
+Validate Form
+  ↓
+POST /v1/application/step
+  ↓
+Redirect to /step/3/{uuid}
+  ↓
+... Repeat Steps 2-5 ...
+  ↓
+Step 4 Special:
+  ├─ POST /v1/ownership (owner details)
+  └─ POST /v1/application/step (step marker)
+  ↓
+... Continue Steps 5-6 ...
+  ↓
+Step 6 Final:
+  ├─ POST /v1/application/step
+  └─ Redirect to /dashboard/merchant (success)
+```
+
+---
+
+**All endpoints ready for implementation** ✅
