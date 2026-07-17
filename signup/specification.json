@@ -11,14 +11,27 @@
       "base_domain": "https://emap.epd.dev",
       "base_url": "https://emap.epd.dev/api/partner",
       "response_format": {
-        "success": { "data": [{ "slug": "value", "name": "label" }] },
+        "success": {
+          "data": [
+            {
+              "slug": "value",
+              "name": "label"
+            }
+          ]
+        },
         "notes": "slug = form value, name = display label"
       },
       "dropdown_endpoints": {
         "countries": {
           "endpoint": "GET https://emap.epd.dev/api/partner/countries",
-          "used_in": ["step_1", "step_2"],
-          "fields": ["country", "business_formed_in"],
+          "used_in": [
+            "step_1",
+            "step_2"
+          ],
+          "fields": [
+            "country",
+            "business_formed_in"
+          ],
           "value_field": "slug",
           "label_field": "name",
           "searchable": true,
@@ -26,8 +39,13 @@
         },
         "states": {
           "endpoint": "GET https://emap.epd.dev/api/partner/states",
-          "used_in": ["step_1", "step_2"],
-          "fields": ["business_state"],
+          "used_in": [
+            "step_1",
+            "step_2"
+          ],
+          "fields": [
+            "business_state"
+          ],
           "value_field": "slug",
           "label_field": "name",
           "conditional": "country === '1'",
@@ -35,8 +53,12 @@
         },
         "industry_types": {
           "endpoint": "GET https://emap.epd.dev/api/partner/industry-types",
-          "used_in": ["step_2"],
-          "fields": ["industry_type"],
+          "used_in": [
+            "step_2"
+          ],
+          "fields": [
+            "industry_type"
+          ],
           "value_field": "slug",
           "label_field": "name",
           "searchable": true,
@@ -44,16 +66,24 @@
         },
         "referral_sources": {
           "endpoint": "GET https://emap.epd.dev/api/partner/referral-sources",
-          "used_in": ["step_6"],
-          "fields": ["howdidyouhear"],
+          "used_in": [
+            "step_6"
+          ],
+          "fields": [
+            "howdidyouhear"
+          ],
           "value_field": "slug",
           "label_field": "name",
           "cache": true
         },
         "transaction_devices": {
           "endpoint": "GET https://emap.epd.dev/api/partner/shopping-carts",
-          "used_in": ["step_6"],
-          "fields": ["transaction_device"],
+          "used_in": [
+            "step_6"
+          ],
+          "fields": [
+            "transaction_device"
+          ],
           "value_field": "slug",
           "label_field": "name",
           "optional": true,
@@ -61,8 +91,12 @@
         },
         "interest_details": {
           "endpoint": "GET https://emap.epd.dev/api/partner/interest-details",
-          "used_in": ["step_6"],
-          "fields": ["other_interests_capital"],
+          "used_in": [
+            "step_6"
+          ],
+          "fields": [
+            "other_interests_capital"
+          ],
           "value_field": "slug",
           "label_field": "name",
           "type": "checkbox_group",
@@ -88,7 +122,10 @@
             "depends_on": null,
             "triggers": null,
             "auto_save_enabled": true,
-            "validation": ["required", "maxlength"]
+            "validation": [
+              "required",
+              "maxlength"
+            ]
           },
           {
             "id": "last_name",
@@ -100,7 +137,10 @@
             "depends_on": null,
             "triggers": null,
             "auto_save_enabled": true,
-            "validation": ["required", "maxlength"]
+            "validation": [
+              "required",
+              "maxlength"
+            ]
           },
           {
             "id": "email",
@@ -111,7 +151,11 @@
             "depends_on": null,
             "triggers": null,
             "auto_save_enabled": true,
-            "validation": ["required", "email", "validate_email"]
+            "validation": [
+              "required",
+              "email",
+              "validate_email"
+            ]
           },
           {
             "id": "phone",
@@ -122,7 +166,10 @@
             "depends_on": null,
             "triggers": null,
             "auto_save_enabled": true,
-            "validation": ["required", "validatePhone"],
+            "validation": [
+              "required",
+              "validatePhone"
+            ],
             "library": "intl-tel-input"
           },
           {
@@ -134,7 +181,10 @@
             "placeholder": "Company Name",
             "depends_on": null,
             "triggers": null,
-            "validation": ["required", "maxlength"]
+            "validation": [
+              "required",
+              "maxlength"
+            ]
           },
           {
             "id": "website",
@@ -146,7 +196,10 @@
             "tooltip": "Add a website url or social media profile url if you currently have no active website",
             "depends_on": null,
             "triggers": null,
-            "validation": ["required", "validUrl"]
+            "validation": [
+              "required",
+              "validUrl"
+            ]
           },
           {
             "id": "country",
@@ -161,9 +214,13 @@
             "searchable": true,
             "hint": "Select the country where your company is legally registered",
             "depends_on": null,
-            "triggers": ["business_state"],
+            "triggers": [
+              "business_state"
+            ],
             "trigger_condition": "value === '1'",
-            "validation": ["required"],
+            "validation": [
+              "required"
+            ],
             "cache": true
           },
           {
@@ -182,7 +239,9 @@
             "depends_condition": "country === '1'",
             "triggers": null,
             "required_message": "Required because your Formation Country is the United States",
-            "validation": ["required"],
+            "validation": [
+              "required"
+            ],
             "cache": true
           },
           {
@@ -191,7 +250,10 @@
             "type": "text",
             "input_mode": "numeric",
             "required": false,
-            "conditional_variant": ["no_apollo", "textract"],
+            "conditional_variant": [
+              "no_apollo",
+              "textract"
+            ],
             "max_length": 16,
             "placeholder": "1,000,000",
             "hint": "USD",
@@ -203,7 +265,9 @@
               "numeralDecimalScale": 0,
               "numeralPositiveOnly": true
             },
-            "validation": ["ValidateAnnualSales"],
+            "validation": [
+              "ValidateAnnualSales"
+            ],
             "error_message": "Annual sales must not exceed $999,999,999,999"
           },
           {
@@ -232,7 +296,9 @@
             "required": true,
             "placeholder": "Legal Company Name",
             "auto_populate": true,
-            "validation": ["required"]
+            "validation": [
+              "required"
+            ]
           },
           {
             "id": "name",
@@ -241,7 +307,9 @@
             "required": true,
             "placeholder": "Company Name (DBA)",
             "auto_populate": true,
-            "validation": ["required"]
+            "validation": [
+              "required"
+            ]
           },
           {
             "id": "industry_type",
@@ -255,9 +323,13 @@
             "label_field": "name",
             "searchable": true,
             "auto_populate": true,
-            "triggers": ["industry_type_other"],
+            "triggers": [
+              "industry_type_other"
+            ],
             "trigger_value": "other_option_id",
-            "validation": ["required"],
+            "validation": [
+              "required"
+            ],
             "cache": true
           },
           {
@@ -285,7 +357,9 @@
             "tooltip": "Please only include the revenue that will be processed via Credit Card Processing",
             "formatter": "cleave",
             "auto_populate": true,
-            "validation": ["ValidateAnnualSales"]
+            "validation": [
+              "ValidateAnnualSales"
+            ]
           },
           {
             "id": "customer_service_telephone_number",
@@ -293,7 +367,9 @@
             "type": "tel",
             "required": true,
             "auto_populate": true,
-            "validation": ["required"]
+            "validation": [
+              "required"
+            ]
           },
           {
             "id": "business_location",
@@ -303,7 +379,9 @@
             "placeholder": "Please Select",
             "data_source": "$businessLocation",
             "auto_populate": true,
-            "validation": ["required"]
+            "validation": [
+              "required"
+            ]
           },
           {
             "id": "business_formed",
@@ -314,7 +392,9 @@
             "hint": "YYYY-MM-DD",
             "placeholder": "Select Date",
             "auto_populate": true,
-            "validation": ["required"]
+            "validation": [
+              "required"
+            ]
           },
           {
             "id": "business_organized",
@@ -324,7 +404,9 @@
             "placeholder": "Please Select",
             "data_source": "$businessOrganized",
             "auto_populate": true,
-            "validation": ["required"]
+            "validation": [
+              "required"
+            ]
           },
           {
             "id": "federal_tax_id",
@@ -343,7 +425,9 @@
             "icon": "fa fa-lock",
             "auto_populate": true,
             "ph_mask": true,
-            "validation": ["required"]
+            "validation": [
+              "required"
+            ]
           },
           {
             "id": "business_register_number",
@@ -372,9 +456,13 @@
             "required": true,
             "data_source": "$marketingModels",
             "auto_populate": true,
-            "triggers": ["subscription_frequency"],
+            "triggers": [
+              "subscription_frequency"
+            ],
             "trigger_value": 2,
-            "validation": ["required"]
+            "validation": [
+              "required"
+            ]
           },
           {
             "id": "subscription_frequency",
@@ -387,11 +475,22 @@
             "depends_on": "marketingModel",
             "depends_condition": "includes_id(2)",
             "options": [
-              { "value": "1", "label": "Monthly" },
-              { "value": "2", "label": "Yearly" },
-              { "value": "3", "label": "Other" }
+              {
+                "value": "1",
+                "label": "Monthly"
+              },
+              {
+                "value": "2",
+                "label": "Yearly"
+              },
+              {
+                "value": "3",
+                "label": "Other"
+              }
             ],
-            "triggers": ["subscription_frequency_other"],
+            "triggers": [
+              "subscription_frequency_other"
+            ],
             "auto_populate": true,
             "validation": []
           },
@@ -425,7 +524,9 @@
             "label": "Customer presents card at point of sale",
             "slider_position": "is-first",
             "depends_on": "transaction_slider",
-            "validation": ["required"]
+            "validation": [
+              "required"
+            ]
           },
           {
             "id": "customer_entered",
@@ -437,7 +538,9 @@
             "label": "Customer enters card details online",
             "slider_position": "is-second",
             "depends_on": "transaction_slider",
-            "validation": ["required"]
+            "validation": [
+              "required"
+            ]
           },
           {
             "id": "staff_entered",
@@ -448,7 +551,9 @@
             "label": "Card details are manually entered",
             "slider_position": "is-third",
             "depends_on": "transaction_slider",
-            "validation": ["required"]
+            "validation": [
+              "required"
+            ]
           },
           {
             "id": "average_transaction_amount",
@@ -461,7 +566,9 @@
             "hint": "The average transaction amount (USD) you expect to process",
             "formatter": "cleave",
             "auto_populate": true,
-            "validation": ["required"]
+            "validation": [
+              "required"
+            ]
           },
           {
             "id": "highest_transaction_amount",
@@ -474,7 +581,9 @@
             "hint": "The highest single transaction amount (USD) you expect to process",
             "formatter": "cleave",
             "auto_populate": true,
-            "validation": ["required"],
+            "validation": [
+              "required"
+            ],
             "warning_display": "#highestTransactionWarning"
           },
           {
@@ -484,7 +593,9 @@
             "required": true,
             "placeholder": "Briefly describe your primary products or services",
             "auto_populate": true,
-            "validation": ["required"]
+            "validation": [
+              "required"
+            ]
           },
           {
             "id": "describe_highest_transaction",
@@ -494,7 +605,10 @@
             "min_length": 15,
             "placeholder": "Briefly describe your highest-priced product or service",
             "auto_populate": true,
-            "validation": ["required", "minlength"]
+            "validation": [
+              "required",
+              "minlength"
+            ]
           }
         ]
       },
@@ -520,7 +634,9 @@
               "visibility": "hidden",
               "prefill": "Auth::user()->first_name",
               "placeholder": "First Name",
-              "validation": ["required"]
+              "validation": [
+                "required"
+              ]
             },
             {
               "id": "owner[1][last_name]",
@@ -530,7 +646,9 @@
               "visibility": "hidden",
               "prefill": "Auth::user()->last_name",
               "placeholder": "Last Name",
-              "validation": ["required"]
+              "validation": [
+                "required"
+              ]
             },
             {
               "id": "owner[1][email]",
@@ -540,7 +658,10 @@
               "visibility": "hidden",
               "prefill": "Auth::user()->email",
               "placeholder": "Email Address",
-              "validation": ["required", "email"]
+              "validation": [
+                "required",
+                "email"
+              ]
             },
             {
               "id": "owner[1][title]",
@@ -550,7 +671,9 @@
               "data_source": "$ownerJobTitle",
               "placeholder": "Select Job Title",
               "auto_populate": true,
-              "validation": ["required"]
+              "validation": [
+                "required"
+              ]
             },
             {
               "id": "owner[1][ssn]",
@@ -568,7 +691,9 @@
               "icon": "fa fa-lock",
               "ph_mask": true,
               "ph_posthog_mask": true,
-              "validation": ["required"]
+              "validation": [
+                "required"
+              ]
             },
             {
               "id": "owner[1][phone]",
@@ -577,7 +702,9 @@
               "input_mode": "numeric",
               "required": true,
               "library": "intl-tel-input",
-              "validation": ["required"]
+              "validation": [
+                "required"
+              ]
             },
             {
               "id": "owner[1][ownership_percentage]",
@@ -588,11 +715,15 @@
               "max": 100,
               "input_mode": "numeric",
               "placeholder": "% of Company Owned",
-              "triggers": ["additional_owner_hint"],
+              "triggers": [
+                "additional_owner_hint"
+              ],
               "trigger_condition": "value < 51",
               "trigger_action": "show_hint",
               "hint_text": "Additional owner information required below",
-              "validation": ["required"]
+              "validation": [
+                "required"
+              ]
             },
             {
               "id": "owner[1][dob]",
@@ -602,7 +733,9 @@
               "format": "YYYY-MM-DD",
               "placeholder": "Date of Birth",
               "auto_populate": true,
-              "validation": ["required"]
+              "validation": [
+                "required"
+              ]
             }
           ]
         },
@@ -718,8 +851,14 @@
             "depends_on": "country",
             "depends_condition": "country === '2'",
             "options": [
-              { "value": "USD", "label": "USD" },
-              { "value": "CAD", "label": "CAD" }
+              {
+                "value": "USD",
+                "label": "USD"
+              },
+              {
+                "value": "CAD",
+                "label": "CAD"
+              }
             ],
             "auto_populate": true,
             "validation": []
@@ -742,9 +881,17 @@
             "data_source": "api",
             "value_field": "slug",
             "label_field": "name",
-            "triggers": ["hear_about_us_other"],
-            "trigger_values": ["50", "14", "8"],
-            "validation": ["required"],
+            "triggers": [
+              "hear_about_us_other"
+            ],
+            "trigger_values": [
+              "50",
+              "14",
+              "8"
+            ],
+            "validation": [
+              "required"
+            ],
             "cache": true
           },
           {
@@ -772,10 +919,18 @@
             "required": true,
             "placeholder": "Please Select",
             "options": [
-              { "value": "1", "label": "Yes" },
-              { "value": "0", "label": "No" }
+              {
+                "value": "1",
+                "label": "Yes"
+              },
+              {
+                "value": "0",
+                "label": "No"
+              }
             ],
-            "validation": ["required"]
+            "validation": [
+              "required"
+            ]
           },
           {
             "id": "transaction_device",
@@ -798,12 +953,22 @@
             "required": true,
             "placeholder": "Please Select",
             "options": [
-              { "value": "1", "label": "Yes" },
-              { "value": "0", "label": "No" }
+              {
+                "value": "1",
+                "label": "Yes"
+              },
+              {
+                "value": "0",
+                "label": "No"
+              }
             ],
-            "triggers": ["bad_experience_happened"],
+            "triggers": [
+              "bad_experience_happened"
+            ],
             "trigger_value": "1",
-            "validation": ["required"]
+            "validation": [
+              "required"
+            ]
           },
           {
             "id": "bad_experience_happened",
@@ -838,7 +1003,9 @@
             "name": "I agree to terms and conditions",
             "type": "checkbox",
             "required": true,
-            "validation": ["required"]
+            "validation": [
+              "required"
+            ]
           }
         ]
       }
@@ -916,11 +1083,17 @@
         "trigger_value": "<50",
         "target_field": "owner_2_section",
         "action": "show",
-        "also_show": ["additional_owner_hint"]
+        "also_show": [
+          "additional_owner_hint"
+        ]
       },
       {
         "trigger_field": "howdidyouhear",
-        "trigger_values": ["50", "14", "8"],
+        "trigger_values": [
+          "50",
+          "14",
+          "8"
+        ],
         "target_field": "hear_about_us_other",
         "action": "show"
       },
@@ -944,7 +1117,9 @@
       }
     ],
     "auto_save_configuration": {
-      "enabled_on_steps": [1],
+      "enabled_on_steps": [
+        1
+      ],
       "trigger_condition": "from_lander === true",
       "save_when": "all_required_fields_filled",
       "debounce_ms": 1000,
@@ -963,11 +1138,23 @@
         "method": "POST",
         "purpose": "Initial signup - Step 1",
         "required_fields": [
-          "first_name", "last_name", "email", "phone",
-          "name", "website", "country", "business_state"
+          "first_name",
+          "last_name",
+          "email",
+          "phone",
+          "name",
+          "website",
+          "country",
+          "business_state"
         ],
-        "optional_fields": ["annual_sales"],
-        "response_fields": ["uuid", "step_count", "redirect_url"],
+        "optional_fields": [
+          "annual_sales"
+        ],
+        "response_fields": [
+          "uuid",
+          "step_count",
+          "redirect_url"
+        ],
         "success_response": 201,
         "error_response": 400
       },
@@ -976,12 +1163,45 @@
         "url": "https://emap.epd.dev/api/v1/application/step",
         "method": "POST",
         "purpose": "Submit each application step (2-6)",
-        "required_fields": ["step_count", "uuid", "section"],
-        "response_fields": ["success", "step_count", "next_step_url"],
-        "step_2_fields": ["legal_name", "name", "industry_type", "customer_service_telephone_number", "business_location", "business_formed", "business_organized", "federal_tax_id"],
-        "step_3_fields": ["card_swiped", "customer_entered", "staff_entered", "average_transaction_amount", "highest_transaction_amount", "describe_services"],
-        "step_5_fields": ["institution_number", "customer_pay_currency"],
-        "step_6_fields": ["howdidyouhear", "multiple_merchant_accounts", "transaction_device", "bad_experience", "other_interests_capital"]
+        "required_fields": [
+          "step_count",
+          "uuid",
+          "section"
+        ],
+        "response_fields": [
+          "success",
+          "step_count",
+          "next_step_url"
+        ],
+        "step_2_fields": [
+          "legal_name",
+          "name",
+          "industry_type",
+          "customer_service_telephone_number",
+          "business_location",
+          "business_formed",
+          "business_organized",
+          "federal_tax_id"
+        ],
+        "step_3_fields": [
+          "card_swiped",
+          "customer_entered",
+          "staff_entered",
+          "average_transaction_amount",
+          "highest_transaction_amount",
+          "describe_services"
+        ],
+        "step_5_fields": [
+          "institution_number",
+          "customer_pay_currency"
+        ],
+        "step_6_fields": [
+          "howdidyouhear",
+          "multiple_merchant_accounts",
+          "transaction_device",
+          "bad_experience",
+          "other_interests_capital"
+        ]
       },
       "step_4_ownership": {
         "endpoint": "POST https://emap.epd.dev/api/v1/ownership",
@@ -990,17 +1210,30 @@
         "purpose": "Submit owner information - Step 4",
         "required_fields": [
           "uuid",
-          "owner[1][first_name]", "owner[1][last_name]", "owner[1][email]",
-          "owner[1][phone]", "owner[1][ssn]", "owner[1][job_title]",
-          "owner[1][ownership_percentage]", "owner[1][dob]"
+          "owner[1][first_name]",
+          "owner[1][last_name]",
+          "owner[1][email]",
+          "owner[1][phone]",
+          "owner[1][ssn]",
+          "owner[1][job_title]",
+          "owner[1][ownership_percentage]",
+          "owner[1][dob]"
         ],
         "conditional_fields": [
-          "owner[2][first_name]", "owner[2][last_name]", "owner[2][email]",
-          "owner[2][phone]", "owner[2][ssn]", "owner[2][job_title]",
-          "owner[2][ownership_percentage]", "owner[2][dob]"
+          "owner[2][first_name]",
+          "owner[2][last_name]",
+          "owner[2][email]",
+          "owner[2][phone]",
+          "owner[2][ssn]",
+          "owner[2][job_title]",
+          "owner[2][ownership_percentage]",
+          "owner[2][dob]"
         ],
         "condition": "owner[1][ownership_percentage] < 50",
-        "response_fields": ["success", "message"]
+        "response_fields": [
+          "success",
+          "message"
+        ]
       }
     },
     "step_navigation": {

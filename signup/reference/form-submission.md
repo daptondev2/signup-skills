@@ -59,18 +59,30 @@ The signup form uses **3 API endpoints** to submit data across 6 steps:
 
 **Frontend Action**:
 ```javascript
-// On form submit
-const formData = new FormData(form);
-const data = Object.fromEntries(formData);
+// On form submit - IMPORTANT: Only send Step 1 fields
+const apiKey = sessionStorage.getItem('api_key');
+
+// Extract ONLY Step 1 fields (DO NOT send all form fields)
+const step1Data = {
+  first_name: document.querySelector('[name="first_name"]').value,
+  last_name: document.querySelector('[name="last_name"]').value,
+  email: document.querySelector('[name="email"]').value,
+  phone: document.querySelector('[name="phone"]').value,
+  name: document.querySelector('[name="name"]').value,           // company name
+  website: document.querySelector('[name="website"]').value,
+  country: document.querySelector('[name="country"]').value,
+  business_state: document.querySelector('[name="business_state"]').value,
+  annual_sales: document.querySelector('[name="annual_sales"]').value
+};
 
 try {
   const response = await fetch('https://emap.epd.dev/api/v1/signup', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': csrfToken
+      'X-API-Key': apiKey  // Required: User's security_key from database
     },
-    body: JSON.stringify(data)
+    body: JSON.stringify(step1Data)  // Only Step 1 data
   });
   
   if (response.status === 201) {
@@ -81,8 +93,12 @@ try {
     window.location.href = `/step/2/${result.uuid}`;
   } else {
     const error = await response.json();
-    // Display field errors
-    displayErrors(error.errors);
+    if (response.status === 401) {
+      showError('Invalid API key. Please log in again.');
+    } else {
+      // Display field errors
+      displayErrors(error.errors);
+    }
   }
 } catch (err) {
   showError('Network error. Please try again.');
@@ -144,7 +160,7 @@ async function submitStep2(formData) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': csrfToken
+      'X-API-Key': apiKey
     },
     body: JSON.stringify(payload)
   });
@@ -246,7 +262,7 @@ async function submitStep4(ownershipData) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': csrfToken
+      'X-API-Key': apiKey
     },
     body: JSON.stringify({
       uuid: uuid,
@@ -265,7 +281,7 @@ async function submitStep4(ownershipData) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': csrfToken
+      'X-API-Key': apiKey
     },
     body: JSON.stringify({
       step_count: 4,
@@ -359,7 +375,7 @@ async function submitStep6(formData) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': csrfToken
+      'X-API-Key': apiKey
     },
     body: JSON.stringify(payload)
   });
@@ -404,7 +420,7 @@ async function submitWithErrorHandling(endpoint, payload) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': csrfToken
+        'X-API-Key': apiKey
       },
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(30000) // 30 second timeout
@@ -635,7 +651,7 @@ class SignupFormController {
   getHeaders() {
     return {
       'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': this.csrfToken
+      'X-API-Key': this.apiKey
     };
   }
 }

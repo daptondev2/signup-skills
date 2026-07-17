@@ -4,6 +4,21 @@ All form submission and data endpoints used by the signup form.
 
 ---
 
+## ⚠️ IMPORTANT: Step-Specific Data
+
+**Each step must ONLY send data for that specific step**, not all form data:
+
+- Step 1 → Send only Step 1 fields to `/v1/signup`
+- Step 2 → Send only Step 2 fields to `/v1/application/step`
+- Step 3 → Send only Step 3 fields to `/v1/application/step`
+- Step 4 → Send only Step 4 fields (ownership) to `/v1/ownership`
+- Step 5 → Send only Step 5 fields to `/v1/application/step`
+- Step 6 → Send only Step 6 fields to `/v1/application/step`
+
+Do NOT submit all form fields at once. This is a critical architectural requirement.
+
+---
+
 ## Form Submission Endpoints
 
 ### 1. POST https://emap.epd.dev/api/v1/signup
@@ -335,13 +350,24 @@ All form submission and data endpoints used by the signup form.
 
 ## Request Headers (Required for All Requests)
 
+**IMPORTANT**: All form submission endpoints (signup, application/step, ownership) require `X-API-Key` header.
+
 ```javascript
 headers: {
   'Content-Type': 'application/json',
-  'X-CSRF-TOKEN': csrfToken,
+  'X-API-Key': apiKey,  // User's security_key from database
   'Accept': 'application/json'
 }
 ```
+
+**Where to Get API Key**:
+- API Key is the user's `security_key` field from the `users` table
+- Must be passed in `X-API-Key` header for authentication
+- Requests without valid API key will return 401 error
+
+**Data Fetch Endpoints** (dropdown data):
+- Do NOT require X-API-Key
+- Can be called freely from frontend
 
 ---
 

@@ -38,6 +38,27 @@ All API endpoints return data in this format:
 - `slug` = form field value (what gets saved to database)
 - `name` = dropdown display label (what user sees)
 
+### Request Headers & Authentication
+
+**Form Submission Endpoints** (`/v1/signup`, `/v1/application/step`, `/v1/ownership`):
+```
+X-API-Key: {user_security_key}  // REQUIRED - User's security_key from database
+Content-Type: application/json
+Accept: application/json
+```
+
+**Data Fetch Endpoints** (`/api/partner/*`):
+```
+Content-Type: application/json
+Accept: application/json
+```
+(No authentication required for dropdown data endpoints)
+
+**API Key Source**:
+- The `X-API-Key` value is the user's `security_key` from the `users` table
+- Must be obtained from user login response or stored in session
+- Invalid or missing X-API-Key will return 401 error with message: "API key is required in X-API-Key header"
+
 ### API Endpoints Mapping
 
 | Endpoint | Used In | Field |
@@ -59,6 +80,35 @@ All API endpoints return data in this format:
 ---
 
 ## Form Submission & Navigation
+
+### ⚠️ CRITICAL: Step-Specific Data Submission
+
+**IMPORTANT**: Each step must ONLY submit data for that step. Do NOT submit all form data at once.
+
+**Correct Approach**:
+- Step 1 endpoint receives → ONLY Step 1 fields
+- Step 2 endpoint receives → ONLY Step 2 fields
+- Step 3 endpoint receives → ONLY Step 3 fields
+- etc.
+
+**Wrong Approach** ❌:
+```javascript
+// DO NOT DO THIS - sends all fields from all steps
+const allData = Object.fromEntries(new FormData(document.querySelector('form')));
+fetch('/v1/signup', { body: JSON.stringify(allData) })  // WRONG!
+```
+
+**Correct Approach** ✅:
+```javascript
+// DO THIS - send only Step 1 fields
+const step1Data = {
+  first_name: form.first_name.value,
+  last_name: form.last_name.value,
+  email: form.email.value,
+  // ... only Step 1 fields
+};
+fetch('/v1/signup', { body: JSON.stringify(step1Data) })  // CORRECT
+```
 
 ### Form Submission Endpoints
 
