@@ -221,15 +221,43 @@ Do NOT submit all form fields at once. This is a critical architectural requirem
 
 ## Data Fetch Endpoints
 
-### GET https://emap.epd.dev/api/partner/countries
-**Used For**: Formation Country (Step 1), Company Country (Step 2)
+### ⚠️ CRITICAL: Authorization Header for Dropdowns
 
-**Response**:
+All dropdown endpoints require `Authorization` header (NOT `X-API-Key`):
+
+```javascript
+headers: {
+  'Authorization': apiKey,  // ← Use Authorization header!
+  'Content-Type': 'application/json'
+}
+```
+
+Without valid Authorization:
 ```json
 {
+  "message": "The API key provided is not valid.",
+  "status": false
+}  // Response: 403
+```
+
+---
+
+### GET https://emap.epd.dev/api/partner/countries
+**Used For**: country (Steps 1, 2)
+
+**Request Headers**:
+```
+Authorization: {user.security_key}
+```
+
+**Success Response** (200):
+```json
+{
+  "success": true,
+  "message": "Country list",
   "data": [
-    { "slug": "1", "name": "United States" },
-    { "slug": "2", "name": "Canada" }
+    { "name": "United States", "code": "US" },
+    { "name": "Canada", "code": "CA" }
   ]
 }
 ```
@@ -237,14 +265,16 @@ Do NOT submit all form fields at once. This is a critical architectural requirem
 ---
 
 ### GET https://emap.epd.dev/api/partner/states
-**Used For**: Formation State (Step 1, conditional on country=US)
+**Used For**: business_state (Step 1, only when country=US)
 
-**Response**:
+**Success Response** (200):
 ```json
 {
+  "success": true,
+  "message": "US State List",
   "data": [
-    { "slug": "CA", "name": "California" },
-    { "slug": "NY", "name": "New York" }
+    { "name": "California", "code": "CA" },
+    { "name": "New York", "code": "NY" }
   ]
 }
 ```
@@ -252,15 +282,16 @@ Do NOT submit all form fields at once. This is a critical architectural requirem
 ---
 
 ### GET https://emap.epd.dev/api/partner/industry-types
-**Used For**: Industry Type (Step 2)
+**Used For**: industry_type (Step 2)
 
-**Response**:
+**Success Response** (200):
 ```json
 {
+  "success": true,
+  "message": "Industry types list",
   "data": [
-    { "slug": "retail", "name": "Retail" },
-    { "slug": "ecommerce", "name": "E-commerce" },
-    { "slug": "other", "name": "Other" }
+    { "name": "Retail", "slug": "retail" },
+    { "name": "E-commerce", "slug": "ecommerce" }
   ]
 }
 ```
@@ -268,16 +299,18 @@ Do NOT submit all form fields at once. This is a critical architectural requirem
 ---
 
 ### GET https://emap.epd.dev/api/partner/referral-sources
-**Used For**: How did you find us (Step 6)
+**Used For**: howdidyouhear (Step 6)
 
-**Response**:
+**Success Response** (200):
 ```json
 {
+  "success": true,
+  "message": "Referral sources list",
   "data": [
-    { "slug": "1", "name": "Google Search" },
-    { "slug": "50", "name": "Other" },
-    { "slug": "14", "name": "Friend" },
-    { "slug": "8", "name": "Live Event / Trade Show" }
+    { "name": "Google Search", "slug": "1" },
+    { "name": "Friend", "slug": "14" },
+    { "name": "Live Event", "slug": "8" },
+    { "name": "Other", "slug": "50" }
   ]
 }
 ```
@@ -285,14 +318,16 @@ Do NOT submit all form fields at once. This is a critical architectural requirem
 ---
 
 ### GET https://emap.epd.dev/api/partner/shopping-carts
-**Used For**: Transaction Device (Step 6)
+**Used For**: transaction_device (Step 6)
 
-**Response**:
+**Success Response** (200):
 ```json
 {
+  "success": true,
+  "message": "Shopping cart list",
   "data": [
-    { "slug": "terminal", "name": "Card Terminal" },
-    { "slug": "software", "name": "Software / Web" }
+    { "name": "Card Terminal", "slug": "terminal" },
+    { "name": "Software / Web", "slug": "software" }
   ]
 }
 ```
@@ -300,15 +335,17 @@ Do NOT submit all form fields at once. This is a critical architectural requirem
 ---
 
 ### GET https://emap.epd.dev/api/partner/interest-details
-**Used For**: Help Your Company Grow (Step 6)
+**Used For**: other_interests_capital (Step 6, array type)
 
-**Response**:
+**Success Response** (200):
 ```json
 {
+  "success": true,
+  "message": "Interest details list",
   "data": [
-    { "slug": "capital", "name": "Capital" },
-    { "slug": "resources", "name": "Resources" },
-    { "slug": "marketing", "name": "Marketing" }
+    { "name": "Capital", "slug": "capital" },
+    { "name": "Resources", "slug": "resources" },
+    { "name": "Marketing", "slug": "marketing" }
   ]
 }
 ```
@@ -348,26 +385,36 @@ Do NOT submit all form fields at once. This is a critical architectural requirem
 
 ---
 
-## Request Headers (Required for All Requests)
+## Request Headers
 
-**IMPORTANT**: All form submission endpoints (signup, application/step, ownership) require `X-API-Key` header.
+### Form Submission Endpoints (signup, application/step, ownership)
 
 ```javascript
 headers: {
   'Content-Type': 'application/json',
-  'X-API-Key': apiKey,  // User's security_key from database
+  'X-API-Key': apiKey,  // ← Use X-API-Key header
   'Accept': 'application/json'
 }
 ```
 
-**Where to Get API Key**:
-- API Key is the user's `security_key` field from the `users` table
-- Must be passed in `X-API-Key` header for authentication
-- Requests without valid API key will return 401 error
+### Data Fetch Endpoints (dropdowns: countries, states, industry-types, etc.)
 
-**Data Fetch Endpoints** (dropdown data):
-- Do NOT require X-API-Key
-- Can be called freely from frontend
+```javascript
+headers: {
+  'Content-Type': 'application/json',
+  'Authorization': apiKey,  // ← Use Authorization header (different!)
+  'Accept': 'application/json'
+}
+```
+
+### Summary
+
+| Endpoint Type | Header Name | Value | Status if Missing |
+|---|---|---|---|
+| Form Submission | `X-API-Key` | user.security_key | 401 |
+| Dropdown Data | `Authorization` | user.security_key | 403 |
+
+**Both use the same value** (user's security_key), but different header names!
 
 ---
 

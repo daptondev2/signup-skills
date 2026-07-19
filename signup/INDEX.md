@@ -1,164 +1,116 @@
-# Signup Form Skill - Quick Index
+# Signup Skill - File Structure
 
-## ⭐ MAIN SKILL FILES (Use These)
+## Main Skill File
 
-### 1. `skill.md` (26KB)
-**The Master Specification**
-
-Complete documentation of the signup form including:
-- All 6 steps (Account, Company, Products, Owners, Banking, Final Details)
-- All 59 form fields with exact specifications
-- 10+ dynamic field behaviors
-- Validation rules and requirements
-- Auto-save strategy
-- API endpoint references
-
-**When to use**: First reference for understanding the entire form structure
-
-**Share with AI**: Yes - this is the main spec
+**`skill.md`** - Start here! Complete implementation guide (325 lines)
+- Covers all 6 steps
+- All field definitions
+- API endpoints with correct headers
+- Dropdown integration with correct Authorization header
+- Form submission examples
+- Error handling
+- Complete checklist
 
 ---
 
-### 2. `specification.json` (32KB)
-**Machine-Readable Specification**
+## Reference Files (in `reference/` folder)
 
-JSON format specification including:
-- Every field with exact type, validation, and requirements
-- API endpoint mappings
-- Dynamic field dependencies
-- Trigger conditions
-- Response formats
-- Validation rules with regex
+Use these for detailed examples and patterns:
 
-**When to use**: For programmatic generation or detailed reference
+- **`ENDPOINTS.md`** - All 9 endpoints documented:
+  - 3 form submission endpoints (signup, application/step, ownership)
+  - 6 dropdown data endpoints
+  - Full request/response examples
+  - Headers and authentication
 
-**Share with AI**: Yes - provide with skill.md
+- **`form-submission.md`** - Step-by-step submission guide:
+  - Detailed examples for each step
+  - JavaScript implementation code
+  - Error handling patterns
+  - Complete flow walkthrough
 
----
-
-## 📚 REFERENCE DOCUMENTATION (Optional)
-
-All reference files are in the `reference/` folder:
-
-### `quick-start.md`
-Quick lookup for:
-- Step-by-step field summary
-- Field types reference
-- Validation patterns
-- Pre-population support
-
-**When to use**: Quick reference while developing
+- **`api-integration.md`** - Dropdown integration patterns:
+  - How to fetch dropdown data
+  - Caching strategies
+  - Dependent field logic
+  - Real-world implementation examples
 
 ---
 
-### `api-integration.md`
-Implementation guide for dropdown/data fetching:
-- All 6 API endpoints for dropdown data
-- Example responses
-- Frontend implementation patterns
-- Error handling strategies
-- Caching recommendations
-- Conditional field logic
-- Testing instructions
+## Configuration Files
 
-**When to use**: Implementing dropdown/data API integration
+- **`specification.json`** - Machine-readable field definitions:
+  - All 59 fields with validation rules
+  - API endpoint mappings
+  - Field dependencies
+  - Response formats
 
 ---
 
-### `form-submission.md` ⭐ NEW
-Complete form submission guide:
-- All 3 form submission endpoints documented
-- Step-by-step submission flow
-- Payload examples for each step
-- Response handling
-- Error handling patterns
-- Complete JavaScript examples
-- End-to-end implementation checklist
+## Critical Implementation Details
 
-**When to use**: Implementing form step submission and navigation
+### Authentication Headers (Most Common Error)
 
----
+**Two Different Headers - Don't Mix Them!**
 
-### `implementation-summary.md`
-Summary of:
-- What was added to the skill
-- API changes and checklist
-- Dropdown fields mapping
-- Implementation checklist
-- Next steps
+| Use Case | Header | Value |
+|----------|--------|-------|
+| Form submissions (signup, step, ownership) | `X-API-Key` | user.security_key |
+| Dropdown data (countries, states, etc.) | `Authorization` | user.security_key |
 
-**When to use**: Understanding what changed and what's needed
+### Why Dropdowns Fail
 
----
+If dropdowns show empty:
+1. Check if using `X-API-Key` instead of `Authorization` ❌
+2. Fix: Use `Authorization` header ✅
+3. Response will be 403 with message "The API key provided is not valid."
 
-### `creation-notes.md`
-Historical information:
-- Original creation summary
-- Package contents
-- What's included vs excluded
-- File sizes and structure
+### Why Form Submission Fails
 
-**When to use**: Understanding the skill's history
+If getting "API key is required in X-API-Key header":
+1. Check if Authorization header instead of `X-API-Key` ❌
+2. Fix: Use `X-API-Key` header ✅
 
 ---
 
-## 🎯 How to Use This Skill
+## How to Use This Skill
 
-### Step 1: Review Main Files
-1. Read `skill.md` for complete overview
-2. Reference `specification.json` for exact details
-
-### Step 2: Share with AI
-```
-"Create the signup form using:
-1. skill.md - Complete specification
-2. specification.json - Machine-readable spec
-
-Reference api-integration.md for implementation patterns"
-```
-
-### Step 3: Implement
-- Use `reference/api-integration.md` for API implementation
-- Use `reference/quick-start.md` for field reference
-- Follow validation patterns from `specification.json`
+1. Read `skill.md` - 5 minutes to understand the full structure
+2. Copy code examples from reference files
+3. Test dropdowns first (most common issue)
+4. Then test form submissions
+5. Finally test full end-to-end flow
 
 ---
 
-## 📁 File Structure
+## Common Mistakes (Checklist)
 
-```
-signup/ (this folder)
-├── INDEX.md ............................ This file
-├── skill.md ........................... ⭐ MAIN - Complete spec
-├── specification.json ................. ⭐ MAIN - JSON spec
-└── reference/ ......................... Supporting docs
-    ├── quick-start.md
-    ├── api-integration.md
-    ├── implementation-summary.md
-    └── creation-notes.md
-```
+- [ ] ❌ Sending ALL form fields at Step 1 (send only 9)
+- [ ] ❌ Using X-API-Key for dropdowns (use Authorization)
+- [ ] ❌ Using Authorization for form submission (use X-API-Key)
+- [ ] ❌ Not showing business_state only for country=US
+- [ ] ❌ Not showing Owner 2 only when Owner 1 < 50%
+- [ ] ❌ Not showing bad_experience_happened only when bad_experience=1
+- [ ] ❌ Forgetting to store UUID between steps
+- [ ] ❌ Not validating before submission
 
 ---
 
-## ✨ What This Skill Covers
+## End-to-End Validation
 
-✅ **Form Structure**: 6 steps, complete flow  
-✅ **All Fields**: 59 fields across all steps  
-✅ **Dynamic Behavior**: 10+ conditional field patterns  
-✅ **API Integration**: 6 endpoints with response formats  
-✅ **Validation**: All rules specified  
-✅ **Best Practices**: Industry-standard patterns  
-✅ **Accessibility**: ARIA and semantic HTML guidance  
+Before declaring the form complete:
 
----
-
-## 🚀 Ready to Use
-
-This skill is **production-ready** and can be immediately shared with AI for form generation.
-
-**Total Package**: ~106KB of comprehensive documentation
+- [ ] User can log in (gets security_key)
+- [ ] Dropdowns load on Step 1 (countries, states)
+- [ ] Conditional fields show/hide correctly
+- [ ] Form validates all required fields
+- [ ] Step 1 submits successfully (gets UUID)
+- [ ] UUID persists to Step 2
+- [ ] Each subsequent step submits only step data
+- [ ] All error messages display correctly
+- [ ] Final step redirects to success page
 
 ---
 
-**Last Updated**: 2025-07-15
-**Status**: ✅ Complete
+**Last Updated**: 2026-07-19  
+**Status**: Production Ready ✅
