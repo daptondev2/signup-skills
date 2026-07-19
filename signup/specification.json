@@ -110,7 +110,7 @@
         "title": "Account Information",
         "description": "Initial account and company setup details",
         "section_count": 2,
-        "field_count": 7,
+        "field_count": 10,
         "fields": [
           {
             "id": "first_name",
@@ -287,7 +287,7 @@
         "title": "Company Information",
         "description": "Detailed company profile and operational details",
         "card_count": 4,
-        "field_count": 15,
+        "field_count": 27,
         "fields": [
           {
             "id": "legal_name",
@@ -507,13 +507,143 @@
             "min_length": 5,
             "auto_populate": true,
             "validation": []
+          },
+          {
+            "id": "street_number",
+            "name": "Street Number",
+            "type": "text",
+            "required": false,
+            "placeholder": "Street Number",
+            "max_length": 10,
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "street_address",
+            "name": "Street Address",
+            "type": "text",
+            "required": false,
+            "placeholder": "Street Address",
+            "max_length": 255,
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "city",
+            "name": "City",
+            "type": "text",
+            "required": false,
+            "placeholder": "City",
+            "max_length": 100,
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "state",
+            "name": "State/Province",
+            "type": "select",
+            "required": false,
+            "placeholder": "Please Select",
+            "data_source": "$usStates",
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "postal_code",
+            "name": "Postal Code",
+            "type": "text",
+            "required": false,
+            "placeholder": "Postal Code",
+            "max_length": 20,
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "country",
+            "name": "Country",
+            "type": "select",
+            "required": false,
+            "placeholder": "Please Select",
+            "api_endpoint": "GET /api/partner/countries",
+            "data_source": "api",
+            "value_field": "slug",
+            "label_field": "name",
+            "searchable": true,
+            "auto_populate": true,
+            "cache": true,
+            "validation": []
+          },
+          {
+            "id": "physical_street_number",
+            "name": "Physical Street Number",
+            "type": "text",
+            "required": false,
+            "placeholder": "Street Number",
+            "max_length": 10,
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "physical_street_address",
+            "name": "Physical Street Address",
+            "type": "text",
+            "required": false,
+            "placeholder": "Street Address",
+            "max_length": 255,
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "physical_city",
+            "name": "Physical City",
+            "type": "text",
+            "required": false,
+            "placeholder": "City",
+            "max_length": 100,
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "physical_state",
+            "name": "Physical State/Province",
+            "type": "select",
+            "required": false,
+            "placeholder": "Please Select",
+            "data_source": "$usStates",
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "physical_postal_code",
+            "name": "Physical Postal Code",
+            "type": "text",
+            "required": false,
+            "placeholder": "Postal Code",
+            "max_length": 20,
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "physical_country",
+            "name": "Physical Country",
+            "type": "select",
+            "required": false,
+            "placeholder": "Please Select",
+            "api_endpoint": "GET /api/partner/countries",
+            "data_source": "api",
+            "value_field": "slug",
+            "label_field": "name",
+            "searchable": true,
+            "auto_populate": true,
+            "cache": true,
+            "validation": []
           }
         ]
       },
       "step_3": {
         "title": "Product Information",
         "description": "Transaction methods and product details",
-        "field_count": 5,
+        "field_count": 15,
         "fields": [
           {
             "id": "card_swiped",
@@ -609,6 +739,80 @@
               "required",
               "minlength"
             ]
+          },
+          {
+            "id": "fulfillment_by",
+            "name": "Fulfillment Method",
+            "type": "select",
+            "required": false,
+            "placeholder": "Please Select",
+            "data_source": "$fulfillmentMethods",
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "fullfillment_company",
+            "name": "Fulfillment Company",
+            "type": "text",
+            "required": false,
+            "placeholder": "Fulfillment Company Name",
+            "max_length": 300,
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "expected_monthly_volume",
+            "name": "Expected Monthly Volume",
+            "type": "text",
+            "input_mode": "numeric",
+            "required": false,
+            "placeholder": "Monthly Volume",
+            "formatter": "cleave",
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "shopping_cart",
+            "name": "Shopping Cart Type",
+            "type": "select",
+            "required": false,
+            "placeholder": "Please Select",
+            "api_endpoint": "GET /api/partner/shopping-carts",
+            "data_source": "api",
+            "value_field": "slug",
+            "label_field": "name",
+            "searchable": true,
+            "auto_populate": true,
+            "cache": true,
+            "validation": []
+          },
+          {
+            "id": "refund_policy",
+            "name": "Refund Policy",
+            "type": "select",
+            "required": false,
+            "placeholder": "Please Select",
+            "data_source": "$refundOptions",
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "customer_service_time",
+            "name": "Customer Service Hours",
+            "type": "select",
+            "required": false,
+            "placeholder": "Please Select",
+            "data_source": "$customerServiceTime",
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "have_recurring",
+            "name": "Have Recurring Charges?",
+            "type": "boolean",
+            "required": false,
+            "auto_populate": true,
+            "validation": []
           }
         ]
       },
@@ -824,7 +1028,7 @@
       "step_5": {
         "title": "Banking Information",
         "description": "Bank account and transaction currency",
-        "field_count": 2,
+        "field_count": 8,
         "fields": [
           {
             "id": "institution_number",
@@ -860,6 +1064,71 @@
                 "label": "CAD"
               }
             ],
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "is_plaid",
+            "name": "Use Plaid for Bank Connection?",
+            "type": "boolean",
+            "required": false,
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "routing_number",
+            "name": "Bank Routing Number",
+            "type": "text",
+            "required": false,
+            "placeholder": "Routing Number",
+            "max_length": 20,
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "account_number",
+            "name": "Bank Account Number",
+            "type": "text",
+            "required": false,
+            "placeholder": "Account Number",
+            "max_length": 20,
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "account_holder_name",
+            "name": "Account Holder Name",
+            "type": "text",
+            "required": false,
+            "placeholder": "Account Holder Name",
+            "max_length": 255,
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "bank_account_type",
+            "name": "Bank Account Type",
+            "type": "select",
+            "required": false,
+            "placeholder": "Please Select",
+            "options": [
+              {
+                "value": "Checking",
+                "label": "Checking"
+              },
+              {
+                "value": "Savings",
+                "label": "Savings"
+              }
+            ],
+            "auto_populate": true,
+            "validation": []
+          },
+          {
+            "id": "is_account_number_tokenize",
+            "name": "Tokenize Account Number?",
+            "type": "boolean",
+            "required": false,
             "auto_populate": true,
             "validation": []
           }
