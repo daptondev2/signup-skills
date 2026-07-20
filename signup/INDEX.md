@@ -1,116 +1,94 @@
-# Signup Skill - File Structure
+# Signup Form Skill - Quick Reference
 
-## Main Skill File
-
-**`skill.md`** - Start here! Complete implementation guide (325 lines)
-- Covers all 6 steps
-- All field definitions
-- API endpoints with correct headers
-- Dropdown integration with correct Authorization header
-- Form submission examples
-- Error handling
-- Complete checklist
+Production-ready skill for building the complete 7-step merchant signup form.
 
 ---
 
-## Reference Files (in `reference/` folder)
+## 📚 Documentation Files
 
-Use these for detailed examples and patterns:
+### Main Specification
+- **skill.md** - Complete form specification (all 73+ fields, validations, APIs)
+- **STEP4_OWNER_INFORMATION.md** - Detailed Step 4 specification (43 owner fields, conditionals)
 
-- **`ENDPOINTS.md`** - All 9 endpoints documented:
-  - 3 form submission endpoints (signup, application/step, ownership)
-  - 6 dropdown data endpoints
-  - Full request/response examples
-  - Headers and authentication
-
-- **`form-submission.md`** - Step-by-step submission guide:
-  - Detailed examples for each step
-  - JavaScript implementation code
-  - Error handling patterns
-  - Complete flow walkthrough
-
-- **`api-integration.md`** - Dropdown integration patterns:
-  - How to fetch dropdown data
-  - Caching strategies
-  - Dependent field logic
-  - Real-world implementation examples
+### Implementation Guides
+- **reference/DEPENDENT_FIELDS.md** - All conditional/dependent field logic with code examples
+- **reference/DROPDOWNS_REFERENCE.md** - All dropdown values (API + static) 
+- **reference/api-examples.md** - Copy-paste JavaScript & cURL code
+- **reference/ENDPOINTS.md** - API endpoints, headers, payloads, error codes
 
 ---
 
-## Configuration Files
+## 🚀 Quick Start
 
-- **`specification.json`** - Machine-readable field definitions:
-  - All 59 fields with validation rules
-  - API endpoint mappings
-  - Field dependencies
-  - Response formats
+### For Developers
+1. Read `skill.md` - Understand all fields and requirements
+2. Read `reference/DEPENDENT_FIELDS.md` - Implement conditional logic
+3. Copy code from `reference/api-examples.md` - Use working implementations
+4. Reference `reference/ENDPOINTS.md` - Verify API calls
 
----
-
-## Critical Implementation Details
-
-### Authentication Headers (Most Common Error)
-
-**Two Different Headers - Don't Mix Them!**
-
-| Use Case | Header | Value |
-|----------|--------|-------|
-| Form submissions (signup, step, ownership) | `X-API-Key` | user.security_key |
-| Dropdown data (countries, states, etc.) | `Authorization` | user.security_key |
-
-### Why Dropdowns Fail
-
-If dropdowns show empty:
-1. Check if using `X-API-Key` instead of `Authorization` ❌
-2. Fix: Use `Authorization` header ✅
-3. Response will be 403 with message "The API key provided is not valid."
-
-### Why Form Submission Fails
-
-If getting "API key is required in X-API-Key header":
-1. Check if Authorization header instead of `X-API-Key` ❌
-2. Fix: Use `X-API-Key` header ✅
+### For QA/Testing
+1. Read `skill.md` → Testing Checklist section
+2. Reference `reference/DEPENDENT_FIELDS.md` - Test all conditionals
+3. Use `reference/ENDPOINTS.md` - Verify error handling
 
 ---
 
-## How to Use This Skill
+## 📋 What's Included
 
-1. Read `skill.md` - 5 minutes to understand the full structure
-2. Copy code examples from reference files
-3. Test dropdowns first (most common issue)
-4. Then test form submissions
-5. Finally test full end-to-end flow
+✅ **All 7 Steps** - Account → Company → Product → Owners → Banking → Final → Signature
 
----
+✅ **73+ Fields** - Complete field specifications with validation rules
 
-## Common Mistakes (Checklist)
+✅ **Dependent Fields** - 15+ conditional show/hide rules with implementation code
 
-- [ ] ❌ Sending ALL form fields at Step 1 (send only 9)
-- [ ] ❌ Using X-API-Key for dropdowns (use Authorization)
-- [ ] ❌ Using Authorization for form submission (use X-API-Key)
-- [ ] ❌ Not showing business_state only for country=US
-- [ ] ❌ Not showing Owner 2 only when Owner 1 < 50%
-- [ ] ❌ Not showing bad_experience_happened only when bad_experience=1
-- [ ] ❌ Forgetting to store UUID between steps
-- [ ] ❌ Not validating before submission
+✅ **API Integration** - 9 endpoints (3 form submission + 6 dropdown fetch)
+
+✅ **Dropdown Values** - 70+ static options mapped
+
+✅ **Code Examples** - JavaScript & cURL ready to use
+
+✅ **Error Handling** - All HTTP status codes documented
 
 ---
 
-## End-to-End Validation
+## 📊 Form Structure
 
-Before declaring the form complete:
-
-- [ ] User can log in (gets security_key)
-- [ ] Dropdowns load on Step 1 (countries, states)
-- [ ] Conditional fields show/hide correctly
-- [ ] Form validates all required fields
-- [ ] Step 1 submits successfully (gets UUID)
-- [ ] UUID persists to Step 2
-- [ ] Each subsequent step submits only step data
-- [ ] All error messages display correctly
-- [ ] Final step redirects to success page
+| Step | Fields | Key Features |
+|------|--------|--------------|
+| 1 | 9 | Phone formatting, country/state selection |
+| 2 | 23 | Address autocomplete, conditional physical address |
+| 3 | 13 | Fulfillment, transaction slider (step: 5) |
+| 4 | 32+ | Owners (1 required, 2 conditional), addresses |
+| 5 | 10 | Routing validation, country-specific fields |
+| 6 | 11 | Interest selection, terms acceptance |
+| 7 | - | Display only (no submission) |
 
 ---
 
+## 🔑 Critical Information
+
+**Two Different Authentication Headers** (Don't mix them up!):
+```
+Form Submission (POST):  X-API-Key: {user.security_key}
+Dropdown Data (GET):     Authorization: {user.security_key}
+```
+
+**Country ID for Conditionals** (Not country code!):
+```
+USA = "1"
+Canada = "2"
+Mexico = "3"
+```
+
+**Required Libraries**:
+- intl-tel-input (phones)
+- Google Maps Places (addresses)
+- ion-rangeslider (slider with step: 5)
+- dependent-fields.js (conditionals)
+- Date picker library
+
+---
+
+**Status**: Production Ready ✅  
 **Last Updated**: 2026-07-19  
-**Status**: Production Ready ✅
+**Total Documentation**: 5 files, ~4000 lines
