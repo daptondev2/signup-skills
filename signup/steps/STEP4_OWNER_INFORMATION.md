@@ -358,38 +358,87 @@ Owner 2:
 
 ## Form Submission
 
-**Payload Structure**:
+**Endpoint**: `POST /v1/ownership`
 
+**Headers**:
+```
+X-API-Key: {user.security_key}
+Content-Type: application/x-www-form-urlencoded
+```
+
+**Payload**:
+```
+uuid={uuid}
+primary_contact=1
+primary_contact_job_title={optional}
+owner_object=owner%5B1%5D%5Bfirst_name%5D=John&owner%5B1%5D%5Bemail%5D=john%40example.com&...
+step_count=4
+```
+
+**CRITICAL**: The `owner_object` parameter MUST be a URL-encoded string (like from `http_build_query`), NOT JSON.
+
+**JavaScript Implementation**:
+```javascript
+// Build owner data object
+const ownerData = {
+  owner: {
+    1: {
+      first_name: 'John',
+      last_name: 'Doe',
+      email: 'john@example.com',
+      users_uuid: 'uuid-from-api', // if from primary_contact API
+      phone: '+1-555-0123',
+      title: '1',
+      ssn: '123-45-6789',
+      dob: '1985-03-15',
+      ownership_percentage: '75',
+      street_number: '123',
+      street_address: 'Main Street',
+      city: 'San Francisco',
+      state: 'CA',
+      postal_code: '94102',
+      country: 'United States',
+      license: 'DL123456789',
+      driver_license_state: 'CA',
+      driver_license_expiration_date: '2028-05-10',
+      bankruptcy_filed: '0'
+    },
+    2: null // or owner 2 data if ownership_percentage < 51
+  }
+};
+
+// Convert to URL-encoded string
+const params = new URLSearchParams();
+Object.entries(ownerData.owner).forEach(([ownerIndex, ownerObj]) => {
+  if (ownerObj) {
+    Object.entries(ownerObj).forEach(([key, value]) => {
+      params.append(`owner[${ownerIndex}][${key}]`, value);
+    });
+  }
+});
+
+// Submit form
+const formData = new FormData();
+formData.append('uuid', dealUuid);
+formData.append('primary_contact', primaryContactValue); // 1 or 0
+formData.append('primary_contact_job_title', jobTitleValue || '');
+formData.append('owner_object', params.toString()); // URL-encoded string
+formData.append('step_count', 4);
+
+const response = await fetch('/v1/ownership', {
+  method: 'POST',
+  headers: { 'X-API-Key': apiKey },
+  body: formData
+});
+```
+
+**Success Response**:
 ```json
 {
-  "step_count": 4,
+  "status": true,
+  "message": "Owners created successfully",
   "uuid": "{uuid}",
-  "section": "ownership_info",
-  "primary_contact": "1",
-  "primary_contact_job_title": "",
-  "owner": {
-    "1": {
-      "first_name": "John",
-      "last_name": "Doe",
-      "email": "john@example.com",
-      "title": "1",
-      "ssn": "123-45-6789",
-      "phone": "+1-555-0123",
-      "ownership_percentage": "75",
-      "dob": "1985-03-15",
-      "owner_1_street_number": "123",
-      "owner_1_street_address": "Main Street",
-      "owner_1_city": "San Francisco",
-      "owner_1_state": "CA",
-      "owner_1_postal_code": "94102",
-      "country": "United States",
-      "bankruptcy_filed": "0",
-      "license": "DL123456789",
-      "driver_license_state": "CA",
-      "driver_license_expiration_date": "2028-05-10"
-    },
-    "2": null
-  }
+  "ruleEngineResponse": {...}
 }
 ```
 
