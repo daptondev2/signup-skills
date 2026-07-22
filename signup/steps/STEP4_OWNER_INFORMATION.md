@@ -420,15 +420,28 @@ owner_object includes: first_name, last_name, email ✓
 | city | text | owner_1_city | locality (long_name) | Required when visible |
 | state | text | owner_1_state | administrative_area_level_1 (short_name) | Required when visible |
 | postal_code | text | owner_1_postal_code | postal_code (short_name) | Required when visible |
-| country | select | owner[1]['country'] | country (long_name) | Required when visible, uses selectpicker |
+| country | select | owner[1]['country'] | **Dropdown with API** | **REQUIRED** - ID: `owner_country1`, Selectpicker with searchable dropdown. Auto-populated from Google autocomplete OR manually selected from API-driven dropdown |
+
+**Country Field Details**:
+- **Field ID**: `id="owner_country1"` (Owner 1), `id="owner_country2"` (Owner 2)
+- **Name Attribute**: `name="owner[1][country]"` (Owner 1), `name="owner[2][country]"` (Owner 2)
+- **Type**: SELECT with selectpicker class (searchable dropdown)
+- **Data Source**: 
+  - **Option 1 (Recommended)**: Populate from `GET /api/partner/countries` API endpoint
+    ```
+    Header: Authorization: {security_key}
+    Response: [{ "name": "United States", "id": "1", "code": "US" }, ...]
+    ```
+  - **Option 2**: Auto-populated from Google Maps autocomplete country value
+- **Required**: Yes, when address section visible
+- **Searchable**: Yes (live-search enabled)
+- **Critical**: Use `id` value for conditionals (e.g., country="1" for United States)
 
 **Autocomplete Behavior**:
-1. Shown initially IF no address data exists
-2. User searches and selects from dropdown
-3. place_changed event fires → auto-populates all 6 fields
-4. Autocomplete container hides (#owner_1_address_area gets d-none class)
-5. Address fields container shows (#owner_1_street_area)
-6. All fields become required
+1. Google autocomplete populates all 6 address fields including country
+2. Country name from Google is MATCHED to selectpicker option text
+3. Selectpicker updates with matching `id` value
+4. Triggers DependentFields for driver_license_state visibility
 
 ### Financial History
 

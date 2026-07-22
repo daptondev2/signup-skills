@@ -11,12 +11,14 @@ Second step of the 7-step signup form. Collects company business details, addres
 
 ## Fields
 
-**Company Details** (10 fields):
+**Company Details** (11 fields):
 
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
 | legal_name | text | Yes | Max 60 chars |
 | name | text | Yes | DBA name, max 60 chars |
+| **country** | **select** | **Yes** | **API: `/api/partner/countries`** - Controls business_state & business_register_number visibility |
+| business_state | select | Conditional | Show ONLY if country="1" (United States), API: `/api/partner/states` |
 | industry_type | select | Yes | API: `/api/partner/industry-types` |
 | annual_sales | text | No | Numeric, variant-specific |
 | customer_service_telephone_number | tel | Yes | Use intl-tel-input |
@@ -24,7 +26,7 @@ Second step of the 7-step signup form. Collects company business details, addres
 | business_formed | date | Yes | YYYY-MM-DD, use date picker |
 | business_organized | select | Yes | Static (slug): Corporation, LLC, Partnership, Government, Sole-Proprietorship, Non-Profit, Other |
 | federal_tax_id | text | Yes | Encrypted, max 20 chars |
-| business_register_number | text | No | Show if country≠"US", max 20 chars |
+| business_register_number | text | Conditional | Show ONLY if country≠"1" (not US), max 20 chars |
 
 **Revenue Model** (3 fields - Checkbox Array with Dependent Hierarchy):
 
@@ -313,18 +315,57 @@ Physical Address:
 
 ---
 
-## Dependent Fields
+## Dependent Fields & Conditionals
 
 ⚠️ **All conditional fields MUST be hidden on page load** (`style="display: none;"`).
 
-**Level 1 Dependencies:**
-- **business_state**: Show if country="US"
-- **business_register_number**: Show if country≠"US"
-- **Physical address section**: Show if is_physical_address_same_as_legal_address="yes"
-- **subscription_frequency**: Show if marketingModel includes "Recurring/Subscription"
+### Country-Based Conditionals (Level 1)
 
-**Level 2 Dependencies:**
-- **subscription_frequency_other**: Show if subscription_frequency="Other"
+**country Field** (Dropdown with Selectpicker):
+- **ID**: `id="business_formed_in"`
+- **Name**: `name="country"`
+- **API**: `GET /api/partner/countries` with header `Authorization: {security_key}`
+- **Required**: Yes
+- **Searchable**: Yes (selectpicker with live-search)
+- **Values**: { "name": "United States", "id": "1" }, { "name": "Canada", "id": "2" }, etc.
+- **CRITICAL**: Use `id` value for conditionals, not `name`
+
+**business_state Field** (Show ONLY if country="1"):
+- **API**: `GET /api/partner/states` with header `Authorization: {security_key}`
+- **Conditional Logic**:
+  ```javascript
+  IF country = "1" (United States):
+    SHOW business_state dropdown
+    MAKE business_state REQUIRED
+  ELSE:
+    HIDE business_state dropdown
+    CLEAR value
+  ```
+
+**business_register_number Field** (Show ONLY if country≠"1"):
+- **Conditional Logic**:
+  ```javascript
+  IF country ≠ "1" (not United States):
+    SHOW business_register_number field
+    MAKE business_register_number REQUIRED
+    maxlength = 20 (or 11 if Canada)
+  ELSE:
+    HIDE business_register_number field
+    CLEAR value
+  ```
+
+**federal_tax_id Label** (Changes based on country):
+- **If country="1" (US)**: Label = "Federal Tax ID"
+- **If country≠"1"**: Label = "Federal Tax ID (or Corporation Tax Number equivalent)"
+
+### Address Conditionals (Level 1)
+
+- **Physical address section**: Show if is_physical_address_same_as_legal_address="yes"
+
+### Revenue Model Conditionals (Level 2)
+
+- **subscription_frequency**: Show if marketingModel includes "Recurring/Subscription" (value 2)
+- **subscription_frequency_other**: Show if subscription_frequency="Other" (value 3)
 
 ---
 
