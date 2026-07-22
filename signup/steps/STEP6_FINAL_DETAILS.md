@@ -15,12 +15,67 @@ Sixth step of the 7-step signup form. Collects referral information, interest de
 |-------|------|----------|-------|
 | howdidyouhear | select | No | API: `/api/partner/referral-sources` |
 | howdidyouhear_other | text | Conditional | Show if howdidyouhear="Other" or "Friend", max 300 chars |
-| multiple_merchant_accounts | select | No | Options: Yes(1), No(0) |
-| transaction_device | select | No | Static options or from API |
-| bad_experience | select | No | Options: Yes(1), No(0) |
+| multiple_merchant_accounts | select | No | Static: Yes(1), No(0) |
+| **transaction_device** | **select** | **No** | **Hardcoded Static Options** - See details below |
+| bad_experience | select | No | Static: Yes(1), No(0) |
 | bad_experience_provider | text | Conditional | Show if bad_experience=1, max 300 chars |
 | other_interests_capital | checkbox array | No | API: `/api/partner/interest-details`, multiple selection |
 | accept_terms | checkbox | Yes | Required to submit, value must be 1 |
+
+---
+
+## Transaction Device Field - Hardcoded Static Options
+
+**Field ID**: `id="transaction_device"`  
+**Name**: `name="transaction_device"`  
+**Type**: SELECT dropdown  
+**Required**: No  
+
+**Static Options** (slug => name key-value pairs):
+```javascript
+{
+  "Easy-Pay-Direct-Gateway": "Easy-Pay-Direct-Gateway",
+  "Another-Payment-Gateway": "Another-Payment-Gateway",
+  "Need-terminal/POS-system": "Need-terminal/POS-system",
+  "Own-terminal/POS-system": "Own-terminal/POS-system",
+  "iPhone/Android": "iPhone/Android",
+  "Other": "Other"
+}
+```
+
+**HTML Example**:
+```html
+<select name="transaction_device" id="transaction_device" class="form-control custom-select">
+  <option value="">Please Select</option>
+  <option value="Easy-Pay-Direct-Gateway">Easy-Pay-Direct-Gateway</option>
+  <option value="Another-Payment-Gateway">Another-Payment-Gateway</option>
+  <option value="Need-terminal/POS-system">Need-terminal/POS-system</option>
+  <option value="Own-terminal/POS-system">Own-terminal/POS-system</option>
+  <option value="iPhone/Android">iPhone/Android</option>
+  <option value="Other">Other</option>
+</select>
+```
+
+**JavaScript Example** (for population):
+```javascript
+const transactionDevices = {
+  "Easy-Pay-Direct-Gateway": "Easy-Pay-Direct-Gateway",
+  "Another-Payment-Gateway": "Another-Payment-Gateway",
+  "Need-terminal/POS-system": "Need-terminal/POS-system",
+  "Own-terminal/POS-system": "Own-terminal/POS-system",
+  "iPhone/Android": "iPhone/Android",
+  "Other": "Other"
+};
+
+// Build dropdown
+Object.entries(transactionDevices).forEach(([slug, name]) => {
+  $('#transaction_device').append(`<option value="${slug}">${name}</option>`);
+});
+
+// Or pre-populate if value is known
+const savedValue = "iPhone/Android";
+$('#transaction_device').val(savedValue);
+```
 
 ---
 
