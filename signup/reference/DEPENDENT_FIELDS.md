@@ -96,6 +96,86 @@ if (this.value !== "US") {
 }
 ```
 
+### Revenue Model → Subscription Frequency (Level 1)
+
+**Condition**: When marketingModel includes value "2" (Recurring/Subscription)
+
+**Action**: Show subscription_frequency dropdown and make required
+
+```html
+<!-- Revenue Model Checkboxes -->
+<label>
+    <input type="checkbox" name="marketingModel[]" value="1">
+    One Time Purchase
+</label>
+<label>
+    <input type="checkbox" name="marketingModel[]" value="2">
+    Recurring/Subscription
+</label>
+<label>
+    <input type="checkbox" name="marketingModel[]" value="3">
+    Trial Offer + Subscription
+</label>
+
+<!-- Subscription Frequency - Hidden by default -->
+<div class="subscription_frequency_container" style="display: none;">
+    <select name="subscription_frequency" required>
+        <option value="">Please Select</option>
+        <option value="1">Monthly</option>
+        <option value="2">Yearly</option>
+        <option value="3">Other</option>
+    </select>
+</div>
+```
+
+```javascript
+// Check if "Recurring/Subscription" is selected
+$('input[name="marketingModel[]"]').on('change', function() {
+    const isRecurringSelected = $('input[name="marketingModel[]"][value="2"]:checked').length > 0;
+    
+    if (isRecurringSelected) {
+        $('.subscription_frequency_container').show();
+        $('select[name="subscription_frequency"]').prop('required', true);
+    } else {
+        $('.subscription_frequency_container').hide();
+        $('select[name="subscription_frequency"]').prop('required', false);
+        $('select[name="subscription_frequency"]').val('');
+        // Also hide subscription_frequency_other
+        $('.subscription_frequency_other').hide();
+    }
+});
+```
+
+### Subscription Frequency → Other Text Field (Level 2 - Nested)
+
+**Condition**: When subscription_frequency = "3" (Other)
+
+**Action**: Show subscription_frequency_other text field and make required
+
+```html
+<!-- Subscription Frequency Other - Hidden by default -->
+<div class="subscription_frequency_other" style="display: none;">
+    <input type="text" name="subscription_frequency_other" 
+           placeholder="Other" minlength="5" required>
+</div>
+```
+
+```javascript
+// When subscription_frequency changes
+$('select[name="subscription_frequency"]').on('change', function() {
+    const value = $(this).val();
+    
+    if (value === '3') { // "Other" selected
+        $('.subscription_frequency_other').show();
+        $('input[name="subscription_frequency_other"]').prop('required', true);
+    } else {
+        $('.subscription_frequency_other').hide();
+        $('input[name="subscription_frequency_other"]').prop('required', false);
+        $('input[name="subscription_frequency_other"]').val('');
+    }
+});
+```
+
 ### Physical Address Toggle
 
 **Condition**: When is_physical_address_same_as_legal_address = "yes"
@@ -488,6 +568,8 @@ if ($('#accept_terms').val() !== '1') {
 |------|---|---|---|---|
 | 1 | country | show/hide | business_state | country="US" |
 | 2 | country | show/hide | business_register_number | country≠"US" |
+| 2 | marketingModel | show/hide | subscription_frequency | includes "2" (Recurring) |
+| 2 | subscription_frequency | show/hide | subscription_frequency_other | value="3" (Other) |
 | 2 | is_physical_address_same_as_legal | show/hide | physical_address_section | value="yes" |
 | 3 | fulfillment_by | show/hide | fullfillment_company | value="Vendor" or "Others" |
 | 3 | shopping_cart | show/hide | shopping_cart_other | value="Other" or "API / Custom Integration" |
@@ -502,10 +584,11 @@ if ($('#accept_terms').val() !== '1') {
 
 ---
 
-**Total Dependent Fields**: 18  
-**Conditional Show/Hide**: 15  
-**Conditional Required**: 8  
+**Total Dependent Fields**: 20  
+**Conditional Show/Hide**: 17  
+**Conditional Required**: 10  
 **Conditional Validation**: 1 (slider sum)
+**Multi-Level Hierarchies**: 2 (Revenue Model → Subscription → Other, Owner 1 < 51% → Owner 2)
 
 ---
 

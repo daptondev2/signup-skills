@@ -14,7 +14,7 @@ Production-ready specification for building the complete 7-step signup form.
 | Step | Title | Fields | Features |
 |------|-------|--------|----------|
 | 1 | Account Information | 9 | Phone formatting, country/state selection |
-| 2 | Company Information | 23 | Address autocomplete, date picker, conditional physical address |
+| 2 | Company Information | 28 | Google Maps autocomplete (legal + physical), revenue model with nested conditionals |
 | 3 | Product Information | 13 | Fulfillment details, transaction slider (multiples of 5) |
 | 4 | Owner Information | 32+ | Owner 1 & conditional Owner 2, financial history, addresses |
 | 5 | Banking Information | 10 | Routing validation, country-specific fields |
@@ -92,41 +92,229 @@ Store UUID in localStorage for all subsequent steps
 | federal_tax_id | text | Yes | Encrypted, max 20 chars |
 | business_register_number | text | No | Show if country≠"US", max 20 chars |
 
-**Legal Address**:
+**Revenue Model** (Checkbox Array with Dependent Hierarchy):
 
-| Field | Type | Required | Notes |
-|-------|------|----------|-------|
-| street_number | text | No | Max 10 chars |
-| street_address | text | No | Max 60 chars, Google Maps autocomplete |
-| city | text | No | Max 60 chars |
-| state | text | No | Max 40 chars |
-| postal_code | text | No | Max 15 chars |
-| country | select | No | API: `/api/partner/countries` |
+| Field | Type | Required | Name Attribute | Notes |
+|-------|------|----------|---|---|
+| marketingModel | checkbox array | Yes | marketingModel[] | Options: "One Time Purchase" (1), "Recurring/Subscription" (2), "Trial Offer + Subscription" (3) |
+| subscription_frequency | select | Conditional | subscription_frequency | Show if "Recurring/Subscription" (2) checked, Options: "Monthly" (1), "Yearly" (2), "Other" (3) |
+| subscription_frequency_other | text | Conditional | subscription_frequency_other | Show if subscription_frequency="Other" (3), min 5 chars |
 
-**Physical/Mailing Address** (Conditional):
+**Revenue Model Conditional Logic**:
+```
+IF marketingModel includes "Recurring/Subscription" (value 2):
+  - SHOW subscription_frequency dropdown
+  - MAKE subscription_frequency REQUIRED
+  
+  IF subscription_frequency = "Other" (value 3):
+    - SHOW subscription_frequency_other text field
+    - MAKE subscription_frequency_other REQUIRED
+ELSE:
+  - HIDE subscription_frequency dropdown
+  - HIDE subscription_frequency_other text field
+  - CLEAR both fields
+```
 
-| Field | Type | Required | Notes |
-|-------|------|----------|-------|
-| is_physical_address_same_as_legal_address | radio | Yes | Options: yes (different) / no (same), Default: no |
-| physical_address_street_number | text | Conditional | Show if yes selected |
-| physical_address_street_address | text | Conditional | Google Maps autocomplete |
-| physical_address_city | text | Conditional | |
-| physical_address_state | text | Conditional | |
-| physical_address_postal_code | text | Conditional | |
-| physical_address_country | select | Conditional | |
+**Legal Address** (All fields REQUIRED):
+
+| Field | Type | Name Attribute | Notes |
+|-------|------|---|---|
+| autocomplete | text | autocomplete | Google Maps Places autocomplete - shown initially if no address data exists |
+| street_number | text | street_number | REQUIRED - Auto-populated from autocomplete, max 10 chars |
+| street_address | text | route | REQUIRED - Auto-populated from autocomplete, max 60 chars |
+| city | text | locality | REQUIRED - Auto-populated from autocomplete, max 60 chars |
+| state | text | administrative_area_level_1 | REQUIRED - Auto-populated from autocomplete, max 40 chars |
+| postal_code | text | postal_code | REQUIRED - Auto-populated from autocomplete, max 15 chars |
+| country | select | country | REQUIRED - Auto-populated from autocomplete |
+
+**Legal Address Autocomplete Behavior**:
+- **Initially shown**: If no address data exists in the form
+- **On selection**: User searches and selects address from Google autocomplete dropdown
+- **Auto-population**: All 6 address fields populate from Google's address_components
+- **After selection**: Autocomplete textbox hides, address fields display and become required
+
+**Component Mapping** (Google address_components → Form fields):
+- `street_number` (short_name) → field id=`street_number`
+- `route` (long_name) → field id=`route`
+- `locality` (long_name) → field id=`locality`
+- `administrative_area_level_1` (short_name) → field id=`administrative_area_level_1`
+- `postal_code` (short_name) → field id=`postal_code`
+- `country` (long_name) → field id=`country` (selectpicker with refresh)
+
+**Physical/Mailing Address** (Conditional on radio selection):
+
+| Field | Type | Name Attribute | Notes |
+|-------|------|---|---|
+| is_physical_address_same_as_legal_address | radio | is_physical_address_same_as_legal_address | Options: yes=different, no=same. Default: no. Controls entire physical address section visibility |
+| physical_address_autocomplete | text | physical_address_autocomplete | Google Maps autocomplete - shown only if radio="yes" AND no address data exists |
+| physical_address_street_number | text | physical_address_street_number | REQUIRED (when visible) - Auto-populated from autocomplete |
+| physical_address_street_address | text | physical_address_street_address | REQUIRED (when visible) - Auto-populated from autocomplete |
+| physical_address_city | text | physical_address_city | REQUIRED (when visible) - Auto-populated from autocomplete |
+| physical_address_state | text | physical_address_state | REQUIRED (when visible) - Auto-populated from autocomplete |
+| physical_address_postal_code | text | physical_address_postal_code | REQUIRED (when visible) - Auto-populated from autocomplete |
+| physical_address_country | select | physical_address_country | REQUIRED (when visible) - Auto-populated from autocomplete |
+
+**Physical Address Behavior**:
+1. **Radio controls section visibility**:
+   - `radio value="no"` (default) → Physical address section hidden
+   - `radio value="yes"` → Physical address section shown
+2. **Autocomplete shown initially**: If radio="yes" AND no physical address data exists
+3. **On selection**: User searches and selects address from Google autocomplete
+4. **Auto-population**: All 6 address fields populate from Google's address_components
+5. **After selection**: Autocomplete hides, address fields display and become required
+
+**Component Mapping** (Google address_components → Form fields):
+- `street_number` (short_name) → field id=`physical_address_street_number`
+- `route` (long_name) → field id=`physical_address_street_address`
+- `locality` (long_name) → field id=`physical_address_city`
+- `administrative_area_level_1` (short_name) → field id=`physical_address_state`
+- `postal_code` (short_name) → field id=`physical_address_postal_code`
+- `country` (long_name) → field id=`physical_address_country` (selectpicker with refresh)
 
 ### Libraries Required
-- `Google Maps Places API` - Address autocomplete
+- `Google Maps Places API` - Address autocomplete (legal + physical)
 - Date picker library
 - `intl-tel-input` - Phone formatting
 
+### Google Maps Implementation Details
+
+**Load Script in Page Header**:
+```html
+<script src="https://maps.google.com/maps/api/js?key={GOOGLE_API_KEY}&libraries=places"></script>
+```
+
+**Legal Address Autocomplete Initialization**:
+```javascript
+google.maps.event.addDomListener(window, 'load', initialize);
+
+var componentForm = {
+    street_number: 'short_name',
+    route: 'long_name',
+    locality: 'long_name',
+    administrative_area_level_1: 'short_name',
+    country: 'long_name',
+    postal_code: 'short_name'
+};
+
+function initialize() {
+    var input = document.getElementById('autocomplete');
+    var autocomplete = new google.maps.places.Autocomplete(input);
+    
+    autocomplete.addListener('place_changed', function() {
+        var place = autocomplete.getPlace();
+        
+        // Extract and populate all address components
+        for (var i = 0; i < place.address_components.length; i++) {
+            var component = place.address_components[i];
+            for (var j = 0; j < component.types.length; j++) {
+                if (componentForm[component.types[j]]) {
+                    var addressType = component.types[j];
+                    var val = component[componentForm[addressType]];
+                    document.getElementById(addressType).value = val;
+                    
+                    // Special handling for country selectpicker
+                    if (addressType === 'country') {
+                        var $countrySelect = $('#country');
+                        $countrySelect.selectpicker('val', val);
+                        $countrySelect.selectpicker('refresh');
+                    } else {
+                        $(document.getElementById(addressType)).trigger('change');
+                        $(document.getElementById(addressType)).valid();
+                    }
+                    break;
+                }
+            }
+        }
+        
+        // Show address fields, hide autocomplete
+        $("#street_area").removeClass("d-none");
+        $("#address_area").addClass("d-none");
+    });
+}
+```
+
+**Physical Address Autocomplete Initialization**:
+```javascript
+function initializePhysicalAddressAutocomplete() {
+    var physicalInput = document.getElementById('physical_address_autocomplete');
+    if (physicalInput) {
+        var physicalAutocomplete = new google.maps.places.Autocomplete(physicalInput);
+        
+        physicalAutocomplete.addListener('place_changed', function() {
+            var place = physicalAutocomplete.getPlace();
+            
+            // Map Google components to physical address field IDs
+            var componentMapping = {
+                street_number: 'physical_address_street_number',
+                route: 'physical_address_street_address',
+                locality: 'physical_address_city',
+                administrative_area_level_1: 'physical_address_state',
+                postal_code: 'physical_address_postal_code',
+                country: 'physical_address_country'
+            };
+            
+            // Extract and populate all address components
+            for (var i = 0; i < place.address_components.length; i++) {
+                var component = place.address_components[i];
+                var addressType = null;
+                
+                for (var j = 0; j < component.types.length; j++) {
+                    if (componentMapping[component.types[j]]) {
+                        addressType = component.types[j];
+                        break;
+                    }
+                }
+                
+                if (addressType) {
+                    var val = component[componentForm[addressType]];
+                    var fieldId = componentMapping[addressType];
+                    var fieldElement = document.getElementById(fieldId);
+                    
+                    if (fieldElement) {
+                        if (addressType === 'country') {
+                            // Special handling for country selectpicker
+                            var $countrySelect = $('#' + fieldId);
+                            $countrySelect.selectpicker('val', val);
+                            $countrySelect.selectpicker('refresh');
+                            $countrySelect.trigger('change');
+                        } else {
+                            fieldElement.value = val;
+                            $(fieldElement).trigger('change');
+                            $(fieldElement).valid();
+                        }
+                    }
+                }
+            }
+            
+            // Show address fields, hide autocomplete
+            $("#physical_address_street_area").removeClass("d-none");
+            $("#physical_address_area").addClass("d-none");
+        });
+    }
+}
+```
+
+**Key Points**:
+- Both autocompletes use `types: ['geocode']` to restrict to address results
+- Extract address components from Google's place object
+- Map component types to form field IDs using componentForm mapping
+- Trigger 'change' and 'valid' events on populated fields
+- Update selectpicker with refresh for country fields
+- Hide autocomplete container and show address fields after selection
+
 ### Dependent Fields
 
-⚠️ **All conditional fields MUST be hidden on page load** (`style="display: none;"`). They only appear when trigger value is selected.
+⚠️ **All conditional fields MUST be hidden on page load** (`style="display: none;"`). They only appear when trigger value is selected. When visible, dependent fields become REQUIRED.
 
+**Level 1 Dependencies:**
 - **business_state**: Show if country="US" (hidden by default)
 - **business_register_number**: Show if country≠"US" (hidden by default)
 - **Physical address section**: Show if is_physical_address_same_as_legal_address="yes" (hidden by default)
+- **subscription_frequency**: Show if marketingModel includes "Recurring/Subscription" (2) (hidden by default)
+
+**Level 2 Dependencies (Nested):**
+- **subscription_frequency_other**: Show if subscription_frequency="Other" (3) (hidden by default)
+  - Only visible when subscription_frequency is visible AND set to "Other"
 
 ### API Integration
 
@@ -511,9 +699,10 @@ localStorage.removeItem('signup_uuid');
 
 ## Field Summary
 
-**Total Fields**: 73+  
-**Required Fields**: 45+  
-**Conditional Fields**: 20+  
+**Total Fields**: 78+ (added Revenue Model + Google Maps autocomplete for both addresses)
+**Required Fields**: 48+  
+**Conditional Fields**: 25+ (including 2-level dependent hierarchy)
+**Google Maps Autocomplete Fields**: 2 (legal address + physical address)  
 **API Dropdowns**: 6  
 **Static Dropdowns**: 8  
 **Address Autocompletes**: 3 (legal, physical, home addresses)  

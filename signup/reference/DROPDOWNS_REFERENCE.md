@@ -178,6 +178,85 @@ Always use the **slug value** when submitting, not the display label.
 
 ---
 
+## Google Maps Address Autocomplete Integration
+
+### Legal Address Autocomplete
+
+**Field**: `autocomplete` (text input, id=`autocomplete`)
+
+**Visibility**: Shown initially ONLY if no address data exists
+
+**Auto-populates fields**:
+- `street_number` (id=`street_number`)
+- `route` (id=`route`) 
+- `locality` (id=`locality`)
+- `administrative_area_level_1` (id=`administrative_area_level_1`)
+- `country` (id=`country`, selectpicker)
+- `postal_code` (id=`postal_code`)
+
+**Behavior**: 
+1. User searches and selects address from autocomplete dropdown
+2. Google place_changed event fires
+3. All 6 address fields populate from Google's address_components
+4. Autocomplete container hides (#address_area gets d-none class)
+5. Address fields container shows (#street_area removes d-none class)
+6. All fields become required
+
+**Component Mapping** (Google → Form Field):
+```
+street_number (short_name) → field id="street_number"
+route (long_name) → field id="route"
+locality (long_name) → field id="locality"
+administrative_area_level_1 (short_name) → field id="administrative_area_level_1"
+postal_code (short_name) → field id="postal_code"
+country (long_name) → field id="country" (selectpicker)
+```
+
+### Physical Address Autocomplete
+
+**Field**: `physical_address_autocomplete` (text input, id=`physical_address_autocomplete`)
+
+**Visibility**: Shown ONLY if:
+- Radio `is_physical_address_same_as_legal_address` = "yes" (different address)
+- AND no physical address data exists yet
+
+**Auto-populates fields**:
+- `physical_address_street_number` (id=`physical_address_street_number`)
+- `physical_address_street_address` (id=`physical_address_street_address`)
+- `physical_address_city` (id=`physical_address_city`)
+- `physical_address_state` (id=`physical_address_state`)
+- `physical_address_postal_code` (id=`physical_address_postal_code`)
+- `physical_address_country` (id=`physical_address_country`, selectpicker)
+
+**Behavior**:
+1. User searches and selects address from autocomplete dropdown
+2. Google place_changed event fires
+3. All 6 physical address fields populate from address_components
+4. Autocomplete container hides (#physical_address_area gets d-none class)
+5. Address fields container shows (#physical_address_street_area removes d-none class)
+6. All fields become required
+
+**Component Mapping** (Google → Form Field):
+```
+street_number (short_name) → field id="physical_address_street_number"
+route (long_name) → field id="physical_address_street_address"
+locality (long_name) → field id="physical_address_city"
+administrative_area_level_1 (short_name) → field id="physical_address_state"
+postal_code (short_name) → field id="physical_address_postal_code"
+country (long_name) → field id="physical_address_country" (selectpicker)
+```
+
+**Key Implementation Details**:
+- Both autocompletes use `types: ['geocode']` restriction
+- Loop through place.address_components array
+- Check component.types array against componentForm mapping
+- Use short_name for state/postal, long_name for street/city/country
+- Trigger 'change' and 'valid' events after populating each field
+- For selectpicker country fields: call `.selectpicker('val', value)` and `.selectpicker('refresh')`
+- Hide autocomplete container, show address fields container after selection
+
+---
+
 ## Static Dropdowns (No API Call Needed)
 
 ### Job Titles (Step 4 - Both Owners)
