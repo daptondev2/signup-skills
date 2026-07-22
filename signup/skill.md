@@ -110,6 +110,48 @@ localStorage.removeItem('signup_uuid');
 
 ---
 
+### URL Routing & Navigation
+
+**URL Pattern**: `signup/step/{step_number}/{uuid}`
+
+**After Each Step Submission** - Redirect to next step:
+```
+Step 1 Success → redirect to: signup/step/2/{uuid}
+Step 2 Success → redirect to: signup/step/3/{uuid}
+Step 3 Success → redirect to: signup/step/4/{uuid}
+Step 4 Success → redirect to: signup/step/5/{uuid}
+Step 5 Success → redirect to: signup/step/6/{uuid}
+Step 6 Success → redirect to: /dashboard/merchant?landing=1
+```
+
+**On Page Refresh** - Load current step from URL:
+```javascript
+// Extract step from URL: /signup/step/3/550e8400-e29b-41d4-a716-446655440000
+const urlParams = new URLSearchParams(window.location.pathname);
+const currentStep = urlParams.split('/')[3];  // e.g., "3"
+const uuid = urlParams.split('/')[4];  // e.g., "550e8400-e29b-41d4-a716-446655440000"
+
+// Load and display the current step
+loadStep(currentStep, uuid);
+
+// Store UUID for API calls
+localStorage.setItem('signup_uuid', uuid);
+```
+
+**Initial URL** (Step 1):
+```
+GET /signup/step/1/{uuid}
+```
+
+**Implementation Notes**:
+- UUID stays the same across all 6 steps
+- URL changes after SUCCESSFUL submission only
+- Failed validation does NOT change URL
+- Refresh shows current step (not reset to step 1)
+- Last step (Step 6) redirects to dashboard instead of another step
+
+---
+
 ### Error Handling
 
 ```javascript
@@ -117,7 +159,7 @@ localStorage.removeItem('signup_uuid');
 201/200: Success - proceed to next step
 400: Bad request - check payload format
 401/403: Auth error - check headers
-422: Validation error - display field errors
+422: Validation error - display field errors (don't change URL)
 500: Server error - retry or report
 ```
 

@@ -48,6 +48,46 @@ Fifth step of the 7-step signup form. Collects bank account and routing informat
 
 ---
 
+## Form Submission & Redirect
+
+**On Success (HTTP 200/201)**:
+```javascript
+// Response example:
+{
+  "status": true,
+  "message": "Banking information saved successfully",
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "step_count": 5
+}
+
+// UUID already stored from Step 1, retrieve and use
+const uuid = localStorage.getItem('signup_uuid');
+
+// Redirect to Step 6
+window.location.href = `/signup/step/6/${uuid}`;
+```
+
+**On Validation Error (HTTP 422)**:
+```javascript
+// Response example:
+{
+  "status": false,
+  "message": "Validation failed",
+  "errors": {
+    "routing_number": ["Routing number is invalid"],
+    "account_number": ["Account number is required"]
+  }
+}
+
+// Display field errors
+// DO NOT change URL - user stays on Step 5
+for (const [field, messages] of Object.entries(response.errors)) {
+  displayErrorForField(field, messages[0]);
+}
+```
+
+---
+
 ## API Integration
 
 **Form Submission**:

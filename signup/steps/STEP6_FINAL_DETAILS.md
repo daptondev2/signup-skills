@@ -33,6 +33,46 @@ Sixth step of the 7-step signup form. Collects referral information, interest de
 
 ---
 
+## Form Submission & Final Redirect
+
+**On Success (HTTP 200/201)** - FINAL STEP:
+```javascript
+// Response example:
+{
+  "status": true,
+  "message": "Signup completed successfully",
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "step_count": 6,
+  "redirect": "/dashboard/merchant?landing=1"
+}
+
+// Clear stored UUID after completion
+localStorage.removeItem('signup_uuid');
+
+// Redirect to Merchant Dashboard (FINAL STEP)
+window.location.href = '/dashboard/merchant?landing=1';
+```
+
+**On Validation Error (HTTP 422)**:
+```javascript
+// Response example:
+{
+  "status": false,
+  "message": "Validation failed",
+  "errors": {
+    "accept_terms": ["You must accept the terms and conditions"]
+  }
+}
+
+// Display field errors
+// DO NOT change URL - user stays on Step 6
+for (const [field, messages] of Object.entries(response.errors)) {
+  displayErrorForField(field, messages[0]);
+}
+```
+
+---
+
 ## API Integration
 
 **Dropdown Data**:

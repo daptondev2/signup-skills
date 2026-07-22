@@ -328,6 +328,46 @@ Physical Address:
 
 ---
 
+## Form Submission & Redirect
+
+**On Success (HTTP 200/201)**:
+```javascript
+// Response example:
+{
+  "status": true,
+  "message": "Company information saved successfully",
+  "uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "step_count": 2
+}
+
+// UUID already stored from Step 1, retrieve and use
+const uuid = localStorage.getItem('signup_uuid');
+
+// Redirect to Step 3
+window.location.href = `/signup/step/3/${uuid}`;
+```
+
+**On Validation Error (HTTP 422)**:
+```javascript
+// Response example:
+{
+  "status": false,
+  "message": "Validation failed",
+  "errors": {
+    "company_name": ["Company name is required"],
+    "legal_address_street_number": ["Street number is required"]
+  }
+}
+
+// Display field errors
+// DO NOT change URL - user stays on Step 2
+for (const [field, messages] of Object.entries(response.errors)) {
+  displayErrorForField(field, messages[0]);
+}
+```
+
+---
+
 ## API Integration
 
 **Dropdown Data**:

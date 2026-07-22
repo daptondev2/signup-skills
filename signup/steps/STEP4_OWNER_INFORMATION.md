@@ -885,6 +885,35 @@ const response = await fetch('/v1/ownership', {
 }
 ```
 
+**On Success - Redirect to Step 5**:
+```javascript
+if (response.status) {
+  const uuid = localStorage.getItem('signup_uuid');
+  
+  // Redirect to Step 5
+  window.location.href = `/signup/step/5/${uuid}`;
+}
+```
+
+**On Validation Error (HTTP 422)**:
+```javascript
+// Response example:
+{
+  "status": false,
+  "message": "Validation failed",
+  "errors": {
+    "owner_object": ["Owner object data is required"],
+    "owner.1.first_name": ["First name is required"]
+  }
+}
+
+// Display field errors
+// DO NOT change URL - user stays on Step 4
+for (const [field, messages] of Object.entries(response.errors)) {
+  displayErrorForField(field, messages[0]);
+}
+```
+
 **When Owner 2 is Shown** (ownership_percentage < 51):
 
 ```json
