@@ -1,14 +1,14 @@
 # Signup Form Skill - Quick Reference
 
-Production-ready skill for building the complete 7-step merchant signup form.
+Production-ready specification for the complete 7-step merchant signup form with 116+ fields, Google Maps address autocomplete, and multi-level conditionals.
 
 ---
 
 ## 📚 Documentation Files
 
 ### Main Specification
-- **skill.md** - Complete form specification (all 73+ fields, validations, APIs)
-- **STEP4_OWNER_INFORMATION.md** - Detailed Step 4 specification (43 owner fields, conditionals)
+- **skill.md** - Complete form specification (116+ fields across 7 steps, validations, APIs)
+- **reference/STEP4_OWNER_INFORMATION.md** - Detailed Step 4 specification (45 owner fields, primary contact, 2 Google autocompletes)
 
 ### Implementation Guides
 - **reference/DEPENDENT_FIELDS.md** - All conditional/dependent field logic with code examples
@@ -37,13 +37,15 @@ Production-ready skill for building the complete 7-step merchant signup form.
 
 ✅ **All 7 Steps** - Account → Company → Product → Owners → Banking → Final → Signature
 
-✅ **73+ Fields** - Complete field specifications with validation rules
+✅ **116+ Fields** - Complete field specifications with validation rules
 
-✅ **Dependent Fields** - 15+ conditional show/hide rules with implementation code
+✅ **Google Maps Autocomplete** - 4 instances (Step 2: legal + physical, Step 4: Owner 1 + Owner 2)
+
+✅ **Multi-Level Conditionals** - 40+ conditional show/hide rules with implementation code
 
 ✅ **API Integration** - 9 endpoints (3 form submission + 6 dropdown fetch)
 
-✅ **Dropdown Values** - 70+ static options mapped
+✅ **Dropdown Values** - 8 API-based + 12 static dropdown options
 
 ✅ **Code Examples** - JavaScript & cURL ready to use
 
@@ -55,13 +57,14 @@ Production-ready skill for building the complete 7-step merchant signup form.
 
 | Step | Fields | Key Features |
 |------|--------|--------------|
-| 1 | 9 | Phone formatting, country/state selection |
-| 2 | 23 | Address autocomplete, conditional physical address |
-| 3 | 13 | Fulfillment, transaction slider (step: 5) |
-| 4 | 32+ | Owners (1 required, 2 conditional), addresses |
+| 1 | 9 | Phone formatting (intl-tel-input), country/state selection |
+| 2 | 28 | Google Maps autocomplete (legal + physical), revenue model with 2-level conditionals |
+| 3 | 13 | Fulfillment details, transaction slider (step: 5) |
+| 4 | 45+ | Primary contact, Owner 1, conditional Owner 2, Google autocomplete (2), driver's license, bankruptcy |
 | 5 | 10 | Routing validation, country-specific fields |
 | 6 | 11 | Interest selection, terms acceptance |
 | 7 | - | Display only (no submission) |
+| **Total** | **116+** | |
 
 ---
 
@@ -90,5 +93,8 @@ Mexico = "3"
 ---
 
 **Status**: Production Ready ✅  
-**Last Updated**: 2026-07-19  
-**Total Documentation**: 5 files, ~4000 lines
+**Last Updated**: 2026-07-22  
+**Total Documentation**: 7 files, ~8000 lines
+**Field Coverage**: 100% (116+ fields from actual MOS implementation)  
+**Autocomplete Instances**: 4 (all with component mapping documented)
+**Multi-Level Conditionals**: 5+ (Revenue Model Level 2, Bankruptcy Level 2 per owner, Owner 2 visibility)
