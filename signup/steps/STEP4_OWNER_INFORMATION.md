@@ -302,57 +302,210 @@ Content-Type: application/json
 
 ## Google Maps Autocomplete Integration
 
-**Library**: Google Maps Places API v3
-
-**Both Owner 1 & 2 Use Same Pattern**:
-
-```javascript
-// Owner 1
-const owner1Autocomplete = new google.maps.places.Autocomplete(
-    document.getElementById('autocomplete2'),
-    { types: ['geocode'] }
-);
-
-// Owner 2
-const owner2Autocomplete = new google.maps.places.Autocomplete(
-    document.getElementById('autocomplete3'),
-    { types: ['geocode'] }
-);
-
-// Component mapping (both owners)
-var componentForm = {
-    street_number: 'short_name',      // e.g., "123"
-    route: 'long_name',                // e.g., "Main Street"
-    locality: 'long_name',             // e.g., "San Francisco"
-    administrative_area_level_1: 'short_name',  // e.g., "CA"
-    country: 'long_name',              // e.g., "United States"
-    postal_code: 'short_name'          // e.g., "94102"
-};
+**Script Include**:
+```html
+<script src="https://maps.google.com/maps/api/js?key={GOOGLE_API_KEY}&libraries=places"></script>
 ```
 
-**Field Mapping**:
+**Complete JavaScript Implementation**:
+```javascript
+var componentForm = {
+    street_number: 'short_name',
+    route: 'long_name',
+    locality: 'long_name',
+    administrative_area_level_1: 'short_name',
+    country: 'long_name',
+    postal_code: 'short_name'
+};
+
+google.maps.event.addDomListener(window, 'load', initialize);
+
+function initialize() {
+    // Owner 1 Autocomplete (id="autocomplete2")
+    var input2 = document.getElementById('autocomplete2');
+    var autocomplete2 = new google.maps.places.Autocomplete(input2);
+    autocomplete2.addListener('place_changed', function () {
+        var place2 = autocomplete2.getPlace();
+
+        // Clear all fields first
+        for (var component in componentForm) {
+            if (component === "country") {
+                $('#owner_country1').selectpicker('val', 'Please Select');
+                $('#owner_country1').selectpicker('refresh');
+                $('#owner_country1').trigger('change');
+            } else {
+                document.getElementById('owner_1_' + component).value = '';
+                $(document.getElementById('owner_1_' + component)).trigger('change');
+                document.getElementById('owner_1_' + component).disabled = false;
+            }
+        }
+
+        // Fill in address components
+        for (var i = 0; i < place2.address_components.length; i++) {
+            var component = place2.address_components[i];
+            var addressType2 = null;
+            
+            for (var j = 0; j < component.types.length; j++) {
+                if (componentForm[component.types[j]]) {
+                    addressType2 = component.types[j];
+                    break;
+                }
+            }
+            
+            if (addressType2) {
+                var val2 = component[componentForm[addressType2]];
+                if (addressType2 === 'country') {
+                    // Match country name to option value and set via selectpicker
+                    if ($('#owner_country1').length) {
+                        $('#owner_country1 option').each(function () {
+                            if ($(this).text() === val2) {
+                                $('#owner_country1').selectpicker('val', $(this).val());
+                                $('#owner_country1').selectpicker('refresh');
+                                $('#owner_country1').trigger('change');
+                                if ($('#owner_country1').valid()) {
+                                    $('#owner_country1').parent('.custom-select').removeClass('is-invalid');
+                                }
+                                if (window.dependentFieldsInstance) {
+                                    window.dependentFieldsInstance.triggerFieldsForTrigger('#owner_country1');
+                                }
+                                return false;
+                            }
+                        });
+                        $('#owner_country1').valid();
+                    }
+                } else {
+                    document.getElementById('owner_1_' + addressType2).value = val2;
+                    $(document.getElementById('owner_1_' + addressType2)).trigger('change');
+                    $(document.getElementById('owner_1_' + addressType2)).valid();
+                }
+            }
+        }
+        
+        // Show individual address fields, hide autocomplete
+        $("#owner_1_street_area").removeClass("d-none");
+        $("#owner_1_city_area").removeClass("d-none");
+        $("#owner_1_state_area").removeClass("d-none");
+        $("#owner_1_country_area").removeClass("d-none");
+        $("#owner_1_postal_area").removeClass("d-none");
+        $("#owner_1_address_area").addClass("d-none");
+        $("#owner_1_street_area input").attr("required", "required");
+        $("#owner_1_city_area input").attr("required", "required");
+        $("#owner_1_state_area input").attr("required", "required");
+        $("#owner_1_postal_area input").attr("required", "required");
+        $("#owner_1_address_area input").removeAttr("required");
+    });
+
+    // Owner 2 Autocomplete (id="autocomplete3") - only if ownership < 51%
+    var input3 = document.getElementById('autocomplete3');
+    if (input3) {
+        var autocomplete3 = new google.maps.places.Autocomplete(input3);
+        autocomplete3.addListener('place_changed', function () {
+            var place3 = autocomplete3.getPlace();
+
+            // Clear all fields first
+            for (var component in componentForm) {
+                if (component === "country") {
+                    $('#owner_country2').selectpicker('val', 'Please Select');
+                    $('#owner_country2').selectpicker('refresh');
+                    $('#owner_country2').trigger('change');
+                } else {
+                    document.getElementById('owner_2_' + component).value = '';
+                    $(document.getElementById('owner_2_' + component)).trigger('change');
+                    document.getElementById('owner_2_' + component).disabled = false;
+                }
+            }
+
+            // Fill in address components
+            for (var i = 0; i < place3.address_components.length; i++) {
+                var component = place3.address_components[i];
+                var addressType3 = null;
+                
+                for (var j = 0; j < component.types.length; j++) {
+                    if (componentForm[component.types[j]]) {
+                        addressType3 = component.types[j];
+                        break;
+                    }
+                }
+                
+                if (addressType3) {
+                    var val3 = component[componentForm[addressType3]];
+                    if (addressType3 === 'country') {
+                        // Match country name to option value and set via selectpicker
+                        if ($('#owner_country2').length) {
+                            $('#owner_country2 option').each(function () {
+                                if ($(this).text() === val3) {
+                                    var $countrySelect2 = $('#owner_country2');
+                                    $countrySelect2.selectpicker('val', $(this).val());
+                                    $countrySelect2.selectpicker('refresh');
+                                    $countrySelect2.trigger('change');
+                                    if ($countrySelect2.valid()) {
+                                        $('#owner_country2').parent('.custom-select').removeClass('is-invalid');
+                                    }
+                                    if (window.dependentFieldsInstance) {
+                                        window.dependentFieldsInstance.triggerFieldsForTrigger('#owner_country2');
+                                    }
+                                    return false;
+                                }
+                            });
+                            $('#owner_country2').valid();
+                        }
+                    } else {
+                        document.getElementById('owner_2_' + addressType3).value = val3;
+                        $(document.getElementById('owner_2_' + addressType3)).trigger('change');
+                        $(document.getElementById('owner_2_' + addressType3)).valid();
+                    }
+                }
+            }
+            
+            // Show individual address fields, hide autocomplete
+            $("#owner_2_street_area").removeClass("d-none");
+            $("#owner_2_city_area").removeClass("d-none");
+            $("#owner_2_state_area").removeClass("d-none");
+            $("#owner_2_country_area").removeClass("d-none");
+            $("#owner_2_postal_area").removeClass("d-none");
+            $("#owner_2_address_area").addClass("d-none");
+            $("#owner_2_street_area input").attr("required", "required");
+            $("#owner_2_city_area input").attr("required", "required");
+            $("#owner_2_state_area input").attr("required", "required");
+            $("#owner_2_postal_area input").attr("required", "required");
+            $("#owner_2_address_area input").removeAttr("required");
+            $('#owner_2_street_area').find(':input').each(function() { $(this).valid(); });
+        });
+    }
+}
+```
+
+**Input Field IDs** (must match HTML):
+- Owner 1 Autocomplete: `id="autocomplete2"`
+- Owner 2 Autocomplete: `id="autocomplete3"` (shown only if ownership_percentage < 51%)
+
+**Output Field IDs** (where data gets populated):
 
 Owner 1:
-- `street_number` → `owner_1_street_number`
-- `route` → `owner_1_street_address`
-- `locality` → `owner_1_city`
-- `administrative_area_level_1` → `owner_1_state`
-- `postal_code` → `owner_1_postal_code`
-- `country` → `owner[1][country]` (selectpicker)
+- `id="owner_1_street_number"` ← street_number component
+- `id="owner_1_street_address"` ← route component
+- `id="owner_1_city"` ← locality component
+- `id="owner_1_state"` ← administrative_area_level_1 component
+- `id="owner_1_postal_code"` ← postal code component
+- `id="owner_country1"` ← country selectpicker (matches option text)
 
 Owner 2:
-- `street_number` → `owner_2_street_number`
-- `route` → `owner_2_street_address`
-- `locality` → `owner_2_city`
-- `administrative_area_level_1` → `owner_2_state`
-- `postal_code` → `owner_2_postal_code`
-- `country` → `owner[2][country]` (selectpicker)
+- `id="owner_2_street_number"` ← street_number component
+- `id="owner_2_street_address"` ← route component
+- `id="owner_2_city"` ← locality component
+- `id="owner_2_state"` ← administrative_area_level_1 component
+- `id="owner_2_postal_code"` ← postal code component
+- `id="owner_country2"` ← country selectpicker (matches option text)
 
-**Implementation Notes**:
-- Extract `short_name` or `long_name` from each address_components item
-- Trigger 'change' event on populated fields for validation
-- Use selectpicker refresh for country dropdowns
-- Hide autocomplete container, show address fields after selection
+**Container IDs** (for show/hide logic):
+
+Owner 1:
+- Autocomplete container: `id="owner_1_address_area"` (hidden after autocomplete)
+- Individual fields containers: `id="owner_1_street_area"`, `id="owner_1_city_area"`, `id="owner_1_state_area"`, `id="owner_1_country_area"`, `id="owner_1_postal_area"` (shown after autocomplete)
+
+Owner 2:
+- Autocomplete container: `id="owner_2_address_area"` (hidden after autocomplete)
+- Individual fields containers: `id="owner_2_street_area"`, `id="owner_2_city_area"`, `id="owner_2_state_area"`, `id="owner_2_country_area"`, `id="owner_2_postal_area"` (shown after autocomplete)
 
 ---
 

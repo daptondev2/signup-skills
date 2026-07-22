@@ -100,12 +100,12 @@ ELSE:
 
 ## Google Maps Implementation
 
-**Script**:
+**Script Include**:
 ```html
 <script src="https://maps.google.com/maps/api/js?key={GOOGLE_API_KEY}&libraries=places"></script>
 ```
 
-**Legal Address Component Mapping**:
+**Complete JavaScript Implementation**:
 ```javascript
 var componentForm = {
     street_number: 'short_name',
@@ -115,19 +115,201 @@ var componentForm = {
     country: 'long_name',
     postal_code: 'short_name'
 };
+
+google.maps.event.addDomListener(window, 'load', initialize);
+
+function initialize() {
+    // Legal Address Autocomplete (id="autocomplete")
+    var input = document.getElementById('autocomplete');
+    var autocomplete = new google.maps.places.Autocomplete(input);
+    autocomplete.addListener('place_changed', function () {
+        var place = autocomplete.getPlace();
+
+        // Clear all fields first
+        for (var component in componentForm) {
+            document.getElementById(component).value = '';
+            $(document.getElementById(component)).trigger('change');
+            document.getElementById(component).disabled = false;
+        }
+
+        // Fill in address components
+        for (var i = 0; i < place.address_components.length; i++) {
+            var component = place.address_components[i];
+            var addressType = null;
+            
+            for (var j = 0; j < component.types.length; j++) {
+                if (componentForm[component.types[j]]) {
+                    addressType = component.types[j];
+                    break;
+                }
+            }
+            
+            if (addressType) {
+                var val = component[componentForm[addressType]];
+                if (addressType === 'country') {
+                    // Special handling for selectpicker
+                    $('#country').selectpicker('val', val);
+                    $('#country').selectpicker('refresh');
+                    $(document.getElementById('country')).trigger('change');
+                    if ($('#country').valid()) {
+                        $('.company-address-country .custom-select').removeClass('is-invalid');
+                    }
+                } else {
+                    document.getElementById(addressType).value = val;
+                    $(document.getElementById(addressType)).trigger('change');
+                    $(document.getElementById(addressType)).valid();
+                }
+            }
+        }
+        
+        // Show individual address fields, hide autocomplete
+        $("#street_area").removeClass("d-none");
+        $("#city_area").removeClass("d-none");
+        $("#state_area").removeClass("d-none");
+        $("#country_area").removeClass("d-none");
+        $("#postal_area").removeClass("d-none");
+        $("#address_area").addClass("d-none");
+        $("#street_area input").attr("required", "required");
+        $("#city_area input").attr("required", "required");
+        $("#state_area input").attr("required", "required");
+        $("#postal_area input").attr("required", "required");
+        $("#address_area input").removeAttr("required");
+    });
+}
+
+// Call this function when physical address radio is changed to "yes" (different address)
+function initializePhysicalAddressAutocomplete() {
+    var physicalInput = document.getElementById('physical_address_autocomplete');
+    if (!physicalInput) return;
+    
+    var physicalAutocomplete = new google.maps.places.Autocomplete(physicalInput);
+    var physicalComponentForm = {
+        street_number: 'short_name',
+        route: 'long_name',
+        locality: 'long_name',
+        administrative_area_level_1: 'short_name',
+        country: 'long_name',
+        postal_code: 'short_name'
+    };
+
+    physicalAutocomplete.addListener('place_changed', function () {
+        var place = physicalAutocomplete.getPlace();
+        
+        // Clear all physical address fields
+        var physicalFields = ['physical_address_street_number', 'physical_address_street_address', 'physical_address_city', 'physical_address_state', 'physical_address_postal_code'];
+        physicalFields.forEach(function(fieldId) {
+            var field = document.getElementById(fieldId);
+            if (field) {
+                field.value = '';
+                $(field).trigger('change');
+            }
+        });
+
+        // Fill in physical address components
+        for (var i = 0; i < place.address_components.length; i++) {
+            var component = place.address_components[i];
+            var addressType = null;
+            
+            for (var j = 0; j < component.types.length; j++) {
+                if (physicalComponentForm[component.types[j]]) {
+                    addressType = component.types[j];
+                    break;
+                }
+            }
+            
+            if (addressType) {
+                var val = component[physicalComponentForm[addressType]];
+                var fieldId = '';
+                
+                switch(addressType) {
+                    case 'street_number':
+                        fieldId = 'physical_address_street_number';
+                        break;
+                    case 'route':
+                        fieldId = 'physical_address_street_address';
+                        break;
+                    case 'locality':
+                        fieldId = 'physical_address_city';
+                        break;
+                    case 'administrative_area_level_1':
+                        fieldId = 'physical_address_state';
+                        break;
+                    case 'postal_code':
+                        fieldId = 'physical_address_postal_code';
+                        break;
+                    case 'country':
+                        fieldId = 'physical_address_country';
+                        break;
+                }
+                
+                if (fieldId) {
+                    var fieldElement = document.getElementById(fieldId);
+                    if (fieldElement) {
+                        if (addressType === 'country') {
+                            var $countrySelect = $('#' + fieldId);
+                            $countrySelect.selectpicker('val', val);
+                            $countrySelect.selectpicker('refresh');
+                            $countrySelect.removeClass('is-invalid error');
+                            $('.physical-address-country .custom-select').removeClass('is-invalid error');
+                            $countrySelect.trigger('change');
+                        } else {
+                            fieldElement.value = val;
+                            $(fieldElement).trigger('change');
+                            $(fieldElement).valid();
+                        }
+                    }
+                }
+            }
+        }
+
+        // Show individual fields, hide autocomplete
+        $("#physical_address_street_area").removeClass("d-none");
+        $("#physical_address_street_area input").attr("required", "required");
+        $("#physical_address_city_area input").attr("required", "required");
+        $("#physical_address_state_area input").attr("required", "required");
+        $("#physical_address_postal_code_area input").attr("required", "required");
+        $("#physical_address_area").addClass("d-none");
+        $("#physical_address_area input").removeAttr("required");
+    });
+}
+
+// Initialize physical address autocomplete when radio changes to "yes"
+$(document).ready(function() {
+    $('#is_physical_address_same_as_legal_address').change(function() {
+        if ($(this).val() === 'yes') {
+            initializePhysicalAddressAutocomplete();
+        }
+    });
+});
 ```
 
-**Physical Address Component Mapping**:
-```javascript
-var componentMapping = {
-    street_number: 'physical_address_street_number',
-    route: 'physical_address_street_address',
-    locality: 'physical_address_city',
-    administrative_area_level_1: 'physical_address_state',
-    postal_code: 'physical_address_postal_code',
-    country: 'physical_address_country'
-};
-```
+**Input Field IDs** (must match HTML):
+- Legal Address: `id="autocomplete"`
+- Physical Address: `id="physical_address_autocomplete"`
+
+**Output Field IDs** (where data gets populated):
+
+Legal Address:
+- `id="street_number"` ← street_number component
+- `id="route"` ← route component  
+- `id="locality"` ← locality component
+- `id="administrative_area_level_1"` ← state component
+- `id="postal_code"` ← postal code component
+- `id="country"` ← country selectpicker
+
+Physical Address:
+- `id="physical_address_street_number"` ← street_number component
+- `id="physical_address_street_address"` ← route component
+- `id="physical_address_city"` ← locality component
+- `id="physical_address_state"` ← administrative_area_level_1 component
+- `id="physical_address_postal_code"` ← postal code component
+- `id="physical_address_country"` ← country selectpicker
+
+**Container IDs** (for show/hide logic):
+- Legal address container: `id="address_area"` (hidden after autocomplete)
+- Legal fields container: `id="street_area"`, `id="city_area"`, `id="state_area"`, `id="country_area"`, `id="postal_area"` (shown after autocomplete)
+- Physical address container: `id="physical_address_area"` (hidden after autocomplete)
+- Physical fields container: `id="physical_address_street_area"` (shown after autocomplete)
 
 ---
 
