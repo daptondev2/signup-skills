@@ -85,7 +85,9 @@ $(document).ready(function() {
     function handlePrimaryContactChange() {
         const primaryContact = $('input[name="primary_contact"]:checked').val();
         const jobTitleContainer = $('#primary_contact_job_title_container');
-        const nameEmailContainer = $('#owner_1_name_email_container');
+        const firstNameContainer = $('#owner_1_first_name_container');
+        const lastNameContainer = $('#owner_1_last_name_container');
+        const emailContainer = $('#owner_1_email_container');
         const firstNameField = $('#owner_1_first_name');
         const lastNameField = $('#owner_1_last_name');
         const emailField = $('#owner_1_email');
@@ -98,13 +100,13 @@ $(document).ready(function() {
             $('#primary_contact_job_title').val('');
             $('#primary_contact_job_title').removeAttr('required');
             
+            // Hide name/email containers (but fields remain type="text")
+            firstNameContainer.hide();
+            lastNameContainer.hide();
+            emailContainer.hide();
+            
             // Fetch user data from API
             fetchUserData(dealUuid, firstNameField, lastNameField, emailField, usersUuidField);
-            
-            // Set fields to hidden type and make read-only
-            firstNameField.attr('type', 'hidden');
-            lastNameField.attr('type', 'hidden');
-            emailField.attr('type', 'hidden');
             
         } else {
             // Primary contact = NO (not the business owner)
@@ -112,11 +114,15 @@ $(document).ready(function() {
             jobTitleContainer.show();
             $('#primary_contact_job_title').attr('required', 'required');
             
-            // Show name/email fields as visible text inputs
-            firstNameField.attr('type', 'text');
-            lastNameField.attr('type', 'text');
-            emailField.attr('type', 'text');
-            nameEmailContainer.show();
+            // Show name/email field containers (user can edit them)
+            firstNameContainer.show();
+            lastNameContainer.show();
+            emailContainer.show();
+            
+            // Remove readonly/disabled from fields
+            firstNameField.removeAttr('readonly').removeAttr('disabled');
+            lastNameField.removeAttr('readonly').removeAttr('disabled');
+            emailField.removeAttr('readonly').removeAttr('disabled');
             
             // Clear API data
             firstNameField.val('');
@@ -147,15 +153,23 @@ $(document).ready(function() {
                     emailField.val(response.data.email || '');
                     usersUuidField.val(response.data.uuid || '');
                     
-                    // Make fields read-only
-                    firstNameField.attr('readonly', 'readonly');
-                    lastNameField.attr('readonly', 'readonly');
-                    emailField.attr('readonly', 'readonly');
+                    // Make fields readonly and disabled so user can't edit
+                    // BUT keep them visible (not hidden) so they're submitted
+                    firstNameField.attr('readonly', 'readonly').attr('disabled', 'disabled');
+                    lastNameField.attr('readonly', 'readonly').attr('disabled', 'disabled');
+                    emailField.attr('readonly', 'readonly').attr('disabled', 'disabled');
                     
                     // Trigger validation
                     firstNameField.trigger('change');
                     lastNameField.trigger('change');
                     emailField.trigger('change');
+                    
+                    console.log('User data fetched and populated:', {
+                        first_name: response.data.first_name,
+                        last_name: response.data.last_name,
+                        email: response.data.email,
+                        users_uuid: response.data.uuid
+                    });
                 } else {
                     console.error('Invalid API response:', response);
                 }
@@ -169,10 +183,17 @@ $(document).ready(function() {
                 }
                 console.error(errorMsg, xhr);
                 
-                // Clear fields on error and show as visible text inputs
-                firstNameField.attr('type', 'text').val('');
-                lastNameField.attr('type', 'text').val('');
-                emailField.attr('type', 'text').val('');
+                // On error: show fields as editable text inputs
+                $('#owner_1_first_name_container').show();
+                $('#owner_1_last_name_container').show();
+                $('#owner_1_email_container').show();
+                
+                // Remove readonly/disabled so user can manually enter
+                firstNameField.removeAttr('readonly').removeAttr('disabled').val('');
+                lastNameField.removeAttr('readonly').removeAttr('disabled').val('');
+                emailField.removeAttr('readonly').removeAttr('disabled').val('');
+                
+                // Fallback: show primary contact job title
                 $('#primary_contact_job_title_container').show();
             }
         });
@@ -181,6 +202,9 @@ $(document).ready(function() {
 ```
 
 **HTML Structure Required**:
+
+⚠️ **CRITICAL**: These fields MUST use `type="text"` or `type="email"` (NOT `type="hidden"`) so they're included in form submission.
+
 ```html
 <!-- Primary Contact Section -->
 <div>
@@ -197,17 +221,22 @@ $(document).ready(function() {
     <input type="text" id="primary_contact_job_title" name="primary_contact_job_title" maxlength="255">
 </div>
 
-<!-- Owner 1 Name & Email Fields (hidden by default if primary_contact=1, shown if primary_contact=0) -->
+<!-- Owner 1 Name & Email Fields 
+     - MUST be type="text" or type="email" (NOT type="hidden")
+     - Hidden VISUALLY (display: none) when primary_contact=1
+     - Made READONLY + DISABLED when filled from API
+     - This ensures they're submitted in form data
+-->
 <div id="owner_1_name_email_container">
-    <div>
+    <div id="owner_1_first_name_container" style="display: none;">
         <label>First Name *</label>
         <input type="text" id="owner_1_first_name" name="owner[1][first_name]" required>
     </div>
-    <div>
+    <div id="owner_1_last_name_container" style="display: none;">
         <label>Last Name *</label>
         <input type="text" id="owner_1_last_name" name="owner[1][last_name]" required>
     </div>
-    <div>
+    <div id="owner_1_email_container" style="display: none;">
         <label>Email *</label>
         <input type="email" id="owner_1_email" name="owner[1][email]" required>
     </div>
@@ -820,42 +849,69 @@ step_count=4
 
 **CRITICAL**: The `owner_object` parameter MUST be a URL-encoded string (like from `http_build_query`), NOT JSON.
 
-**JavaScript Implementation**:
+**JavaScript Implementation** (Proper Form Data Collection):
+
+⚠️ **CRITICAL**: Ensure first_name, last_name, and email are ALWAYS included:
+
 ```javascript
-// Build owner data object
+// Collect all form data - including readonly fields from API
+const form = document.getElementById('step4Form');
+const formData = new FormData(form);
+
+// Extract owner data from form fields
 const ownerData = {
   owner: {
     1: {
-      first_name: 'John',
-      last_name: 'Doe',
-      email: 'john@example.com',
-      users_uuid: 'uuid-from-api', // if from primary_contact API
-      phone: '+1-555-0123',
-      title: '1',
-      ssn: '123-45-6789',
-      dob: '1985-03-15',
-      ownership_percentage: '75',
-      street_number: '123',
-      street_address: 'Main Street',
-      city: 'San Francisco',
-      state: 'CA',
-      postal_code: '94102',
-      country: 'United States',
-      license: 'DL123456789',
-      driver_license_state: 'CA',
-      driver_license_expiration_date: '2028-05-10',
-      bankruptcy_filed: '0'
+      // REQUIRED fields - these MUST be present for API
+      first_name: formData.get('owner[1][first_name]') || '',
+      last_name: formData.get('owner[1][last_name]') || '',
+      email: formData.get('owner[1][email]') || '',
+      
+      // Optional/Conditional fields
+      users_uuid: formData.get('owner[1][users_uuid]') || '',
+      phone: formData.get('owner[1][phone]') || '',
+      title: formData.get('owner[1][title]') || '',
+      ssn: formData.get('owner[1][ssn]') || '',
+      dob: formData.get('owner[1][dob]') || '',
+      ownership_percentage: formData.get('owner[1][ownership_percentage]') || '',
+      street_number: formData.get('owner[1][street_number]') || '',
+      street_address: formData.get('owner[1][street_address]') || '',
+      city: formData.get('owner[1][city]') || '',
+      state: formData.get('owner[1][state]') || '',
+      postal_code: formData.get('owner[1][postal_code]') || '',
+      country: formData.get('owner[1][country]') || '',
+      license: formData.get('owner[1][license]') || '',
+      driver_license_state: formData.get('owner[1][driver_license_state]') || '',
+      driver_license_expiration_date: formData.get('owner[1][driver_license_expiration_date]') || '',
+      bankruptcy_filed: formData.get('owner[1][bankruptcy_filed]') || '0'
     },
     2: null // or owner 2 data if ownership_percentage < 51
   }
 };
+
+// Validate required fields
+if (!ownerData.owner[1].first_name) {
+  console.error('Validation Error: first_name is required');
+  alert('First name is required');
+  return false;
+}
+if (!ownerData.owner[1].last_name) {
+  console.error('Validation Error: last_name is required');
+  alert('Last name is required');
+  return false;
+}
+if (!ownerData.owner[1].email) {
+  console.error('Validation Error: email is required');
+  alert('Email is required');
+  return false;
+}
 
 // Convert to URL-encoded string
 const params = new URLSearchParams();
 Object.entries(ownerData.owner).forEach(([ownerIndex, ownerObj]) => {
   if (ownerObj) {
     Object.entries(ownerObj).forEach(([key, value]) => {
-      params.append(`owner[${ownerIndex}][${key}]`, value);
+      params.append(`owner[${ownerIndex}][${key}]`, value || '');
     });
   }
 });
