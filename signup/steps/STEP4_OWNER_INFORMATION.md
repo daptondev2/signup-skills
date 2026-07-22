@@ -315,8 +315,8 @@ ELSE:
 | Field | Type | HTML Name | Validation | Notes |
 |-------|------|-----------|------------|-------|
 | license | text | owner[1]['license'] | Required | Driver's License / Passport Number, 5-25 chars, min/max validation |
-| driver_license_state | select | owner[1]['driver_license_state'] | Required | US States dropdown (2-letter codes) |
-| driver_license_expiration_date | date | owner[1]['driver_license_expiration_date'] | Required | Format: YYYY-MM-DD |
+| driver_license_state | select | owner[1]['driver_license_state'] | Required (when country=US) | **CONDITIONAL**: Show/require ONLY when country="United States". US States dropdown (2-letter codes). Wrapper: `.driver_license_state1` |
+| driver_license_expiration_date | date | owner[1]['driver_license_expiration_date'] | Required (when country=US) | **CONDITIONAL**: Show/require ONLY when country="United States". Format: YYYY-MM-DD. Wrapper: `.driver_license_state1` |
 
 ---
 
@@ -375,8 +375,8 @@ ELSE:
 | Field | Type | HTML Name | Validation | Notes |
 |-------|------|-----------|------------|-------|
 | license | text | owner[2]['license'] | Required | Driver's License / Passport Number, 5-25 chars |
-| driver_license_state | select | owner[2]['driver_license_state'] | Required | US States dropdown |
-| driver_license_expiration_date | date | owner[2]['driver_license_expiration_date'] | Required | Format: YYYY-MM-DD |
+| driver_license_state | select | owner[2]['driver_license_state'] | Required (when country=US) | **CONDITIONAL**: Show/require ONLY when country="United States". US States dropdown (2-letter codes). Wrapper: `.driver_license_state2` |
+| driver_license_expiration_date | date | owner[2]['driver_license_expiration_date'] | Required (when country=US) | **CONDITIONAL**: Show/require ONLY when country="United States". Format: YYYY-MM-DD. Wrapper: `.driver_license_state2` |
 
 ---
 
@@ -410,6 +410,128 @@ ELSE (bankruptcy_filed = 0):
   HIDE bankruptcy_discharged
   HIDE bankruptcy_discharged_date
   CLEAR both values
+```
+
+### Driver's License State & Expiration Visibility (Both Owners)
+
+**Trigger**: Country field selection
+
+```
+IF country = "United States" (country option value = 1):
+  SHOW driver_license_state field (make required)
+  SHOW driver_license_expiration_date field (make required)
+  DISPLAY error message: "Required because your Country is the United States."
+  
+ELSE (country ≠ "United States"):
+  HIDE driver_license_state field
+  HIDE driver_license_expiration_date field
+  CLEAR both field values
+  REMOVE required validation
+```
+
+**Implementation Requirements**:
+
+Owner 1:
+- Trigger field ID: `#owner_country1` (country dropdown)
+- Target fields IDs: `#owner_1_driver_license_state_input`, `#firstExpirationDate`
+- Container wrapper class: `.driver_license_state1` (for hide/show)
+- Trigger value: `1` (the option value for United States in the countries dropdown)
+
+Owner 2:
+- Trigger field ID: `#owner_country2` (country dropdown)
+- Target field IDs: `#driver_license_state`, `#secondExpirationDate`
+- Container wrapper class: `.driver_license_state2` (for hide/show)
+- Trigger value: `1` (same as Owner 1)
+
+**JavaScript Implementation** (using DependentFields library):
+
+```javascript
+window.dependentFieldsInstance = new DependentFields({
+    rules: [
+        // Owner 1 - Driver License State
+        {
+            trigger: '#owner_country1',
+            target: '#owner_1_driver_license_state_input',
+            targetWrapper: '.driver_license_state1',
+            value: '1',  // United States
+            message: 'Required because your Country is the United States.'
+        },
+        // Owner 1 - Driver License Expiration
+        {
+            trigger: '#owner_country1',
+            target: '#firstExpirationDate',
+            targetWrapper: '.driver_license_state1',
+            value: '1',  // United States
+            message: 'Required because your Country is the United States.'
+        },
+        // Owner 2 - Driver License State
+        {
+            trigger: '#owner_country2',
+            target: '#driver_license_state',
+            targetWrapper: '.driver_license_state2',
+            value: '1',  // United States
+            message: 'Required because your Country is the United States.'
+        },
+        // Owner 2 - Driver License Expiration
+        {
+            trigger: '#owner_country2',
+            target: '#secondExpirationDate',
+            targetWrapper: '.driver_license_state2',
+            value: '1',  // United States
+            message: 'Required because your Country is the United States.'
+        }
+    ]
+});
+```
+
+**HTML Structure Requirements**:
+
+Owner 1 fields must be wrapped in a container with class `.driver_license_state1`:
+```html
+<div class="driver_license_state1" style="display: none;">
+    <div class="form-group">
+        <label>Driver's License State</label>
+        <select id="owner_1_driver_license_state_input" 
+                name="owner[1]['driver_license_state']"></select>
+    </div>
+</div>
+
+<div class="driver_license_state1" style="display: none;">
+    <div class="form-group">
+        <label>Driver's License Expiration</label>
+        <input type="text" id="firstExpirationDate" 
+               name="owner[1]['driver_license_expiration_date']">
+    </div>
+</div>
+```
+
+Owner 2 fields must be wrapped in a container with class `.driver_license_state2`:
+```html
+<div class="driver_license_state2" style="display: none;">
+    <div class="form-group">
+        <label>Driver's License State</label>
+        <select id="driver_license_state" 
+                name="owner[2]['driver_license_state']"></select>
+    </div>
+</div>
+
+<div class="driver_license_state2" style="display: none;">
+    <div class="form-group">
+        <label>Driver's License Expiration</label>
+        <input type="text" id="secondExpirationDate" 
+               name="owner[2]['driver_license_expiration_date']">
+    </div>
+</div>
+```
+
+**Trigger Handler** (when country changes via autocomplete or manual selection):
+```javascript
+// After setting country value (either from autocomplete or user selection)
+if (window.dependentFieldsInstance) {
+    window.dependentFieldsInstance.triggerFieldsForTrigger('#owner_country1');
+    // Or for Owner 2:
+    window.dependentFieldsInstance.triggerFieldsForTrigger('#owner_country2');
+}
 ```
 
 ---
