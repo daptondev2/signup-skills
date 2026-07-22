@@ -54,6 +54,174 @@ ELSE (primary_contact = 1 - Is the business owner):
     STORE users_uuid from API response
 ```
 
+### JavaScript Implementation
+
+**Field IDs** (must match HTML):
+- `id="primary_contact"` - Radio button for primary contact (values: 1 or 0)
+- `id="primary_contact_job_title"` - Text field for job title
+- `id="owner_1_first_name"` - Owner 1 first name field
+- `id="owner_1_last_name"` - Owner 1 last name field
+- `id="owner_1_email"` - Owner 1 email field
+- `id="owner_1_users_uuid"` - Hidden field to store user UUID from API
+
+**Container IDs** (for show/hide):
+- `id="primary_contact_job_title_container"` - Wrapper for job title field (hidden by default)
+- `id="owner_1_name_email_container"` - Wrapper for first/last name & email fields
+
+**Complete Implementation**:
+```javascript
+$(document).ready(function() {
+    const dealUuid = localStorage.getItem('signup_uuid');
+    const apiKey = $('#api_key').val(); // or however you store the security key
+    
+    // Initialize based on current primary_contact value
+    handlePrimaryContactChange();
+    
+    // Listen for radio changes
+    $('input[name="primary_contact"]').change(function() {
+        handlePrimaryContactChange();
+    });
+    
+    function handlePrimaryContactChange() {
+        const primaryContact = $('input[name="primary_contact"]:checked').val();
+        const jobTitleContainer = $('#primary_contact_job_title_container');
+        const nameEmailContainer = $('#owner_1_name_email_container');
+        const firstNameField = $('#owner_1_first_name');
+        const lastNameField = $('#owner_1_last_name');
+        const emailField = $('#owner_1_email');
+        const usersUuidField = $('#owner_1_users_uuid');
+        
+        if (primaryContact === '1' || primaryContact === 1) {
+            // Primary contact = YES (is the business owner)
+            // Hide job title field
+            jobTitleContainer.hide();
+            $('#primary_contact_job_title').val('');
+            $('#primary_contact_job_title').removeAttr('required');
+            
+            // Fetch user data from API
+            fetchUserData(dealUuid, firstNameField, lastNameField, emailField, usersUuidField);
+            
+            // Set fields to hidden type and make read-only
+            firstNameField.attr('type', 'hidden');
+            lastNameField.attr('type', 'hidden');
+            emailField.attr('type', 'hidden');
+            
+        } else {
+            // Primary contact = NO (not the business owner)
+            // Show job title field
+            jobTitleContainer.show();
+            $('#primary_contact_job_title').attr('required', 'required');
+            
+            // Show name/email fields as visible text inputs
+            firstNameField.attr('type', 'text');
+            lastNameField.attr('type', 'text');
+            emailField.attr('type', 'text');
+            nameEmailContainer.show();
+            
+            // Clear API data
+            firstNameField.val('');
+            lastNameField.val('');
+            emailField.val('');
+            usersUuidField.val('');
+        }
+    }
+    
+    function fetchUserData(uuid, firstNameField, lastNameField, emailField, usersUuidField) {
+        if (!uuid) {
+            console.error('No signup UUID found');
+            return;
+        }
+        
+        $.ajax({
+            url: `/v1/user/${uuid}`,
+            type: 'POST',
+            headers: {
+                'X-API-Key': apiKey,
+                'Content-Type': 'application/json'
+            },
+            success: function(response) {
+                if (response.status && response.data) {
+                    // Populate fields from API response
+                    firstNameField.val(response.data.first_name || '');
+                    lastNameField.val(response.data.last_name || '');
+                    emailField.val(response.data.email || '');
+                    usersUuidField.val(response.data.uuid || '');
+                    
+                    // Make fields read-only
+                    firstNameField.attr('readonly', 'readonly');
+                    lastNameField.attr('readonly', 'readonly');
+                    emailField.attr('readonly', 'readonly');
+                    
+                    // Trigger validation
+                    firstNameField.trigger('change');
+                    lastNameField.trigger('change');
+                    emailField.trigger('change');
+                } else {
+                    console.error('Invalid API response:', response);
+                }
+            },
+            error: function(xhr) {
+                let errorMsg = 'Failed to fetch user information';
+                if (xhr.status === 404) {
+                    errorMsg = 'User information not found';
+                } else if (xhr.status === 500) {
+                    errorMsg = 'Server error while fetching user information';
+                }
+                console.error(errorMsg, xhr);
+                
+                // Clear fields on error and show as visible text inputs
+                firstNameField.attr('type', 'text').val('');
+                lastNameField.attr('type', 'text').val('');
+                emailField.attr('type', 'text').val('');
+                $('#primary_contact_job_title_container').show();
+            }
+        });
+    }
+});
+```
+
+**HTML Structure Required**:
+```html
+<!-- Primary Contact Section -->
+<div>
+    <label>Are you the business owner?</label>
+    <input type="radio" name="primary_contact" id="primary_contact" value="1" checked>
+    <label>Yes (Primary Contact)</label>
+    <input type="radio" name="primary_contact" id="primary_contact_no" value="0">
+    <label>No</label>
+</div>
+
+<!-- Job Title (hidden by default, shown only if primary_contact=0) -->
+<div id="primary_contact_job_title_container" style="display: none;">
+    <label>Job Title</label>
+    <input type="text" id="primary_contact_job_title" name="primary_contact_job_title" maxlength="255">
+</div>
+
+<!-- Owner 1 Name & Email Fields (hidden by default if primary_contact=1, shown if primary_contact=0) -->
+<div id="owner_1_name_email_container">
+    <div>
+        <label>First Name *</label>
+        <input type="text" id="owner_1_first_name" name="owner[1][first_name]" required>
+    </div>
+    <div>
+        <label>Last Name *</label>
+        <input type="text" id="owner_1_last_name" name="owner[1][last_name]" required>
+    </div>
+    <div>
+        <label>Email *</label>
+        <input type="email" id="owner_1_email" name="owner[1][email]" required>
+    </div>
+    <!-- Hidden field to store user UUID from API -->
+    <input type="hidden" id="owner_1_users_uuid" name="owner[1][users_uuid]" value="">
+</div>
+```
+
+**API Response Mapping**:
+- `response.data.uuid` → `owner[1][users_uuid]` (stored in hidden field)
+- `response.data.first_name` → `owner[1][first_name]` (hidden text input if primary_contact=1)
+- `response.data.last_name` → `owner[1][last_name]` (hidden text input if primary_contact=1)
+- `response.data.email` → `owner[1][email]` (hidden text input if primary_contact=1)
+
 ---
 
 ## Owner 1 Details
